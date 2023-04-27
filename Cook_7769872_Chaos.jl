@@ -157,13 +157,13 @@ end
 begin
 	ti = 0
 	tf = 100
-	steps = 1001
-	t = LinRange(ti,tf,steps)
+	N = 1001
+	t = LinRange(ti,tf,N)
 
 	alg = Vern6()
 
 	X_0 = [0,0,0,0]
-	X_1 = [pi,pi,0,0]
+	X_1 = [0.25pi,0.25pi,0,0]
 	X_2 = [pi,pi,0,0]
 end
 
@@ -220,11 +220,24 @@ anim = @animate for i in eachindex(t)
 end
 
 # ╔═╡ e1b27519-eb42-4c61-8dbe-bdc6313a2492
-gif(anim,"pendulum.gif",fps=20)
+gif(anim,"pendulum.gif",fps=25)
+
+# ╔═╡ a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
+begin #a-div(a,2pi)*2pi
+	x=zeros(N)
+	y=zeros(N)
+	for i in 1:N
+		x[i]=X1[1,i]-div(X1[1,i],2pi)*2pi
+		y[i]=X1[2,i]-div(X1[2,i],2pi)*2pi
+
+		x[i]>pi ? x[i] += -2pi : (x[i]<-pi ? x[i] += 2pi : x[i])
+		y[i]>pi ? y[i] += -2pi : (y[i]<-pi ? y[i] += 2pi : y[i])
+	end
+end
 
 # ╔═╡ 4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
 anim2 = @animate for i in eachindex(t)
-	scatter([X1[1,i],X1[2,i]],size=(500,500))
+	scatter((x[i],y[i]),size=(500,500),label=false)
 	xlims!(-pi,pi)
 	ylims!(-pi,pi)
 end
@@ -263,7 +276,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "b09b90d157aa8225e43ab028b20bbd1aca388d2f"
+project_hash = "324a0e15ca6ac60bf222f87709f93f649a83a8e6"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -1813,6 +1826,7 @@ version = "1.4.1+0"
 # ╠═1076e16c-d8c3-4e1a-b260-3d7c69d66c05
 # ╠═4814218e-08a8-4c02-a2d8-1c26c9306e31
 # ╠═e1b27519-eb42-4c61-8dbe-bdc6313a2492
+# ╠═a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
 # ╠═4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
 # ╠═24ffbfb3-9029-42da-a445-a74253bf1ef3
 # ╟─0aa6b76e-cd19-463d-9ec4-9154d725b93c
