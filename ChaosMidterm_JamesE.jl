@@ -9,7 +9,7 @@ using PlutoUI
 
 # ╔═╡ 814f4a90-d274-11ed-346c-d7fcaa9dfadb
 md"""
-# Chaos Theory: James Elford (Lil' stinker)
+# Chaos Theory: James Elford
 """
 
 # ╔═╡ ec7c6b22-1376-47d9-9b38-97ed2f420207
