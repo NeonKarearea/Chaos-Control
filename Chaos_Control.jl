@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ ad6884ce-cd1a-4380-bac5-e93ada49a5d3
-using DifferentialEquations, ChaosTools, Plots
+using DifferentialEquations, Plots, ChaosTools
 
 # ╔═╡ f1ee5416-2778-4f35-aa94-452a47029e6e
 using PlutoUI
@@ -130,7 +130,7 @@ md"""
 
 # ╔═╡ e69175b4-c5a8-43f8-84a1-dae852f6dda7
 begin
-	function pendulum!(dth, th, para, t)
+	function pendulum(dth, th, para, t)
 		m1, m2, l1, l2, g = para #This imports our parameters
 		dth[1] = th[3] #This is the time derivative of θ_1
 		dth[2] = th[4] #This is the time derivative of θ_2
@@ -145,26 +145,34 @@ end
 # ╔═╡ 0e8d7bf3-c127-4d61-8d50-20144bec434f
 begin
 	p = [1 1 1 1 9.81] #This sets up our parameters in the order of m1, m2, l1, l2, and g
-	th1 = 0.99pi #Inital condition of θ_1
-	th2 = -0.25pi #Initial conditon of θ_2
-	w1 = 0 #Initial condition of ω_1
-	w2 = 0 #Initial condition of ω_2
+	th1 = 0.5pi #Inital condition of θ_1
+	th2 = -0.5pi #Initial conditon of θ_2
+	w1 = 0.0 #Initial condition of ω_1
+	w2 = 0.0 #Initial condition of ω_2
 	s = [th1;th2;w1;w2]
 	ti = 0 #Initial time
-	tf = 60
-	tstep = 1000
-	alg = [Tsit5(), TanYam7(), Vern7(), TsitPap8()]
+	tf = 30 #Final time
+	tstep = 10000
+	alg = [Tsit5(), TanYam7(), Vern6(), Midpoint()]
 	tr = LinRange(ti,tf,tstep)
 end
 
 # ╔═╡ e80dc8b6-c1a7-4bb8-96c5-8bea54a9bf55
 begin
-	prob = ODEProblem(pendulum!, s, (ti,tf), p) #This sets up the problem
-	solved_alg2 = solve(prob,alg[1],saveat=tr) #This solves it with Vern6
-	solved_alg1 = solve(prob,alg[2],saveat=tr) #This solves it with Vern6(lazy=false)
-	solved_alg3 = solve(prob,alg[3],saveat=tr) #This solves it with Vern7
-	solved_alg4 = solve(prob,alg[4],saveat=tr) #This solves it with Vern7(lazy=false)
+	prob = ODEProblem(pendulum, s, (ti,tf), p) #This sets up the problem
 end
+
+# ╔═╡ 977b78a0-cc31-4346-ab9c-305b9010b69f
+solved_alg1 = solve(prob,alg[1],saveat=tr); #This solves it with Vern6
+
+# ╔═╡ c4d17b85-7606-4ed5-b437-69c83497bda1
+solved_alg2 = solve(prob,alg[2],saveat=tr); #This solves it with TanYam7
+
+# ╔═╡ 5d4f123c-5630-48ca-b41a-a96bee90a60d
+solved_alg3 = solve(prob,alg[3],saveat=tr); #This solves it with Vern7
+
+# ╔═╡ 89d10b57-6394-4ee1-b87b-dca76b32608f
+solved_alg4 = solve(prob,alg[4],saveat=tr); #This solves it with TsitPap8
 
 # ╔═╡ a2a7f0fb-52e6-4b37-9cb5-b71dafd4b471
 begin
@@ -199,27 +207,40 @@ begin
 	dE2 = energy_change(solved_alg2)
 	dE3 = energy_change(solved_alg3)
 	dE4 = energy_change(solved_alg4)
-	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern7()" "TsitPap8()"],xaxis="Time (s)",yaxis="Energy (J)")
+	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)")
 end
+
+# ╔═╡ 9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
+begin
+	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)", layout=(2,2), legend=:topleft)
+end
+
+# ╔═╡ 5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
+md"""
+We will use Vern 6. While Midpoint() does give the expected result for π, π it is not enough resolution."""
 
 # ╔═╡ 7971ab29-c7c7-44ab-92c8-d529d54159bc
 begin
-	plot(tr, [solved_alg4[1,:], solved_alg4[2,:]], labels=["θ1" "θ2"])
+	plot(tr, [solved_alg3[1,:], solved_alg3[2,:]], labels=["θ1" "θ2"])
 end
 
 # ╔═╡ 59492867-d943-4078-8906-c12ddf0bc2c3
 begin
-	plot(tr, [solved_alg4[3,:], solved_alg4[4,:]], labels = ["ω1" "ω2"])
+	plot(tr, [solved_alg3[3,:], solved_alg3[4,:]], labels = ["ω1" "ω2"], legend=:topleft)
 end
 
-# ╔═╡ f87f7e50-672a-4fe4-8f06-356a57c3303f
+# ╔═╡ f17b837a-0acb-478d-9ae4-6a763a51cca3
+begin
+	function lya(t_final, t_step, algo)
+		dt = t_final/t_step
+		diffeq = (alg = algo, abstol = 1e-9, reltol = 1e-9)
+		pendy = CoupledODEs(pendulum, s, p; diffeq)
+		exponent = lyapunov(pendy, tstep; Δt = dt)
+	end
+end
 
-
-# ╔═╡ 4d434e21-c642-40b0-9a97-ecd4094b80de
-# ╠═╡ disabled = true
-#=╠═╡
-#gif(animation, "Propane Nightmare.gif", fps=30)
-  ╠═╡ =#
+# ╔═╡ ec1e3719-e459-4662-923c-577f9a365ae1
+lya(tf, tstep, alg[3])
 
 # ╔═╡ 28e8fa88-68a4-4e5d-be49-74e9910766fa
 logistic_map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Logistic_Bifurcation_map_High_Resolution.png/1280px-Logistic_Bifurcation_map_High_Resolution.png";
@@ -588,9 +609,9 @@ version = "0.6.8"
 
 [[deps.DynamicalSystemsBase]]
 deps = ["ForwardDiff", "LinearAlgebra", "OrdinaryDiffEq", "Reexport", "Roots", "SciMLBase", "SparseArrays", "StateSpaceSets", "Statistics"]
-git-tree-sha1 = "d30690b0c9e62490cb51459a2c2129ec3a68b2d3"
+git-tree-sha1 = "ded2cf6b994716ca416272ebca4aa7d8f41145c7"
 uuid = "6e36e845-645a-534a-86f2-f5d4aa5a06b4"
-version = "3.1.1"
+version = "3.1.2"
 
 [[deps.EnumX]]
 git-tree-sha1 = "bdb1942cd4c45e3c678fd11569d5cccd80976237"
@@ -850,9 +871,9 @@ version = "0.5.1"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "d979e54b71da82f3a65b62553da4fc3d18c9004c"
+git-tree-sha1 = "0cb9352ef2e01574eeebdb102948a58740dcaf83"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2018.0.3+2"
+version = "2023.1.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -1181,6 +1202,12 @@ git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.4"
 
+[[deps.MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "3295d296288ab1a0a2528feb424b854418acff57"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "1.2.3"
+
 [[deps.NLSolversBase]]
 deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]
 git-tree-sha1 = "a0b464d183da839699f4c79e7606d9d186ec172c"
@@ -1371,10 +1398,10 @@ uuid = "1d0040c9-8b98-4ee7-8388-3f51789ca0ad"
 version = "0.2.1"
 
 [[deps.Polynomials]]
-deps = ["ChainRulesCore", "LinearAlgebra", "MakieCore", "RecipesBase"]
-git-tree-sha1 = "86efc6f761df655f8782f50628e45e01a457d5a2"
+deps = ["ChainRulesCore", "LinearAlgebra", "MakieCore", "MutableArithmetics", "RecipesBase"]
+git-tree-sha1 = "434f66dfbb15606c49a7a21dc670119fdf729fa9"
 uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "3.2.8"
+version = "3.2.10"
 
 [[deps.PositiveFactorizations]]
 deps = ["LinearAlgebra"]
@@ -1497,9 +1524,9 @@ version = "0.4.0+0"
 
 [[deps.Roots]]
 deps = ["ChainRulesCore", "CommonSolve", "Printf", "Setfield"]
-git-tree-sha1 = "b45deea4566988994ebb8fb80aa438a295995a6e"
+git-tree-sha1 = "82362f2a4f756951f21ebb3ac2aed094c46a5109"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "2.0.10"
+version = "2.0.12"
 
 [[deps.RoundingEmulator]]
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
@@ -1636,9 +1663,9 @@ version = "2.2.0"
 
 [[deps.StateSpaceSets]]
 deps = ["Distances", "Distributions", "LinearAlgebra", "Neighborhood", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "5810521b141ae9a8fe5c6321703036b14f125fae"
+git-tree-sha1 = "4d2344a28a4d12a9a017a1f3b2bd0dfafa11153c"
 uuid = "40b095a5-5852-4c12-98c7-d43bf788e795"
-version = "1.2.1"
+version = "1.3.2"
 
 [[deps.Static]]
 deps = ["IfElse"]
@@ -2090,12 +2117,18 @@ version = "1.4.1+0"
 # ╠═e69175b4-c5a8-43f8-84a1-dae852f6dda7
 # ╠═0e8d7bf3-c127-4d61-8d50-20144bec434f
 # ╠═e80dc8b6-c1a7-4bb8-96c5-8bea54a9bf55
+# ╠═977b78a0-cc31-4346-ab9c-305b9010b69f
+# ╠═c4d17b85-7606-4ed5-b437-69c83497bda1
+# ╠═5d4f123c-5630-48ca-b41a-a96bee90a60d
+# ╠═89d10b57-6394-4ee1-b87b-dca76b32608f
 # ╠═a2a7f0fb-52e6-4b37-9cb5-b71dafd4b471
 # ╠═7a61e8b3-014c-4dc6-8647-fbf7c37f52f6
-# ╠═7971ab29-c7c7-44ab-92c8-d529d54159bc
+# ╠═9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
+# ╟─5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
+# ╟─7971ab29-c7c7-44ab-92c8-d529d54159bc
 # ╠═59492867-d943-4078-8906-c12ddf0bc2c3
-# ╠═f87f7e50-672a-4fe4-8f06-356a57c3303f
-# ╠═4d434e21-c642-40b0-9a97-ecd4094b80de
+# ╠═f17b837a-0acb-478d-9ae4-6a763a51cca3
+# ╠═ec1e3719-e459-4662-923c-577f9a365ae1
 # ╟─f1ee5416-2778-4f35-aa94-452a47029e6e
 # ╟─28e8fa88-68a4-4e5d-be49-74e9910766fa
 # ╟─53475708-5d97-45db-a8f3-96a85b492b49
