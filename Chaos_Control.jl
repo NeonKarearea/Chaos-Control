@@ -137,16 +137,16 @@ begin
 
 		ds = sin(th[1] - th[2]) #This sets up sin(Δθ)
 		
-		dth[3] = (m2*l1*((th[3])^2)*(2*ds)+2*m2*l2*((th[4])^2)*ds+2g*m2*cos(th[2])*ds+2*g*m1*sin(th[1])) / (-2*l1*(m1+m2*ds^2)) #This monstrosity is the time derivative of ω_1
-		dth[4] = (m2*l2*((th[4])^2)*2*ds+2*(m1+m2)*l1*((th[3])^2)*ds+2*g*(m1+m2)*cos(th[1])*ds) / (2*l2*(m1+(m2*ds^2))) #This monstrosity is the time derivative of ω_2
+		dth[3] = (m2*l1*((th[3])^2)*sin(2*ds)+2*m2*l2*((th[4])^2)*sin(ds)+2g*m2*cos(th[2])*sin(ds)+2*g*m1*sin(th[1])) / (-2*l1*(m1+(m2*sin(ds)^2))) #This monstrosity is the time derivative of ω_1
+		dth[4] = (m2*l2*((th[4])^2)*sin(2*ds)+2*(m1+m2)*l1*((th[3])^2)*sin(ds)+2*g*(m1+m2)*cos(th[1])*sin(ds)) / (2*l2*(m1+(m2*(sin(ds))^2))) #This monstrosity is the time derivative of ω_2
 	end
 end
 
 # ╔═╡ 0e8d7bf3-c127-4d61-8d50-20144bec434f
 begin
 	p = [1 1 1 1 9.81] #This sets up our parameters in the order of m1, m2, l1, l2, and g
-	th1 = 1.2 #Inital condition of θ_1
-	th2 = -2.0 #Initial conditon of θ_2
+	th1 =  -2.1#Inital condition of θ_1
+	th2 = 1.2 #Initial conditon of θ_2
 	w1 = 0.0 #Initial condition of ω_1
 	w2 = 0.0 #Initial condition of ω_2
 	s = [th1;th2;w1;w2]
@@ -181,11 +181,11 @@ begin
 		E = zeros(n) #This sets up a vector
 		i = 1 #This sets up our counter
 		while i <= tstep
-			T1 = 0.5*p[1]*(p[3]*sin(solution[3,i])).^2 #This is the kinetic energy of the first pendulum
-			T2 = T1 + 0.5*p[2]*(p[4]*sin(solution[4,i])).^2 #This is the kinetic energy of the second pendulum
-			U1 = p[1]*p[5]*p[3]*cos(solution[1,i]) #This is the potential energy of the first pendulum
-			U2 = U1 + p[2]*p[5]*p[4]*cos(solution[2,i]) #This is the potential energy of the second pendulum
-			Ei = T1+T2+U1+U2 #This finds the energy at that point
+			T1 = 0.5*p[1]*(p[3]*sin(solution[3,i])).^2
+			T2 = T1 + 0.5*p[2]*(p[4]*sin(solution[4,i])).^2
+			U1 = p[1]*p[5]*p[3]*cos(solution[1,i])
+			U2 = U1 + p[2]*p[5]*p[4]*cos(solution[2,i])
+			Ei = T1+T2+U1+U2
 			E[i] = Ei #This will gives us the energy. Now what we need to do is calculate the change in energy.
 			i += 1
 		end
@@ -194,7 +194,7 @@ begin
 		j = 2 #This is our counter
 		while j <= tstep
 			deltaE = E[j] - E[j-1] #This finds the difference in energy
-			E_delta[j] = deltaE #This pushes the deltaE into the E_delta vector
+			E_delta[j] = deltaE
 			j += 1
 		end
 		return E_delta
@@ -203,16 +203,16 @@ end
 
 # ╔═╡ 7a61e8b3-014c-4dc6-8647-fbf7c37f52f6
 begin
-	dE1 = energy_change(solved_alg1) #This finds ΔE using the first algorithm
-	dE2 = energy_change(solved_alg2) #This finds ΔE using the second algorithm
-	dE3 = energy_change(solved_alg3) #This finds ΔE using the third algorithm
-	dE4 = energy_change(solved_alg4) #This finds ΔE using the fouth algorithm
-	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)") #This plots all of the ΔE
+	dE1 = energy_change(solved_alg1)
+	dE2 = energy_change(solved_alg2)
+	dE3 = energy_change(solved_alg3)
+	dE4 = energy_change(solved_alg4)
+	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)")
 end
 
 # ╔═╡ 9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
 begin
-	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)", layout=(2,2), legend=:topleft) #This plots all of the ΔE on different graphs 
+	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)", layout=(2,2), legend=:topleft)
 end
 
 # ╔═╡ 5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
@@ -221,48 +221,129 @@ We will use Vern 6. While Midpoint() does give the expected result for π, π it
 
 # ╔═╡ 7971ab29-c7c7-44ab-92c8-d529d54159bc
 begin
-	plot(tr, [solved_alg3[1,:], solved_alg3[2,:]], labels=["θ1" "θ2"]) #This plots Θ1 and Θ2
+	plot(tr, [solved_alg3[1,:], solved_alg3[2,:]], labels=["θ1" "θ2"])
 end
 
 # ╔═╡ 59492867-d943-4078-8906-c12ddf0bc2c3
 begin
-	plot(tr, [solved_alg3[3,:], solved_alg3[4,:]], labels = ["ω1" "ω2"], legend=:topleft) #This plots ω1 and ω2
+	plot(tr, [solved_alg3[3,:], solved_alg3[4,:]], labels = ["ω1" "ω2"], legend=:topleft)
 end
+
+# ╔═╡ 8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
+begin
+	s_regular = [0.25pi, 0.25pi, 0, 0]
+	s_chaotic = [pi, pi, 0, 0]
+	s_stable = [-2.1, 1.2, 0, 0]
+end
+
+# ╔═╡ fe7a0702-bc6f-45ed-b026-8a1cf768a85c
+begin #Everything here is to make the animation quicker (hence the middle english word cwic). We don't use the cwic stuff for the heat maps as the accuracy there is more valuable there than it is here.
+	cwic_tstep = 1000
+	cwic_tr = LinRange(ti,tf,cwic_tstep)
+end
+
+# ╔═╡ e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
+begin
+	#This is the regular zone
+	cwic_prob_regular = ODEProblem(pendulum, s_regular, (ti,tf), p)
+	cwic_solved_regular = solve(cwic_prob_regular, alg[3], saveat=cwic_tr)
+
+	#This is the chaotic zone
+	cwic_prob_chaotic = ODEProblem(pendulum, s_chaotic, (ti,tf), p)
+	cwic_solved_chaotic = solve(cwic_prob_chaotic, alg[3], saveat=cwic_tr)
+	
+	#This is for the island of stability
+	cwic_prob_stable = ODEProblem(pendulum, s_stable, (ti,tf), p)
+	cwic_solved_stable = solve(cwic_prob_stable, alg[3], saveat=cwic_tr)
+end
+
+# ╔═╡ 822037d4-cc95-4168-b7d8-483a79cbde15
+begin
+	gif_regular = cwic_solved_regular[1:2,:]
+	gif_chaotic = cwic_solved_chaotic[1:2,:]
+	gif_stable = cwic_solved_stable[1:2,:]
+end
+
+# ╔═╡ dc140cd1-920b-4cab-9c1c-c2bb90f01166
+begin
+	function gif_maker(X,t,l1,l2)
+		theta1 = X[1]
+		theta2 = X[2]
+
+		#This sets the size
+		size = 1.1l1+1.1l2
+
+		#These below give us the different positions
+		x1 = l1*sin(theta1)
+		x2 = l1*sin(theta1) + l2*sin(theta2)
+		y1 = -l1*cos(theta1)
+		y2 = -l1*cos(theta1) - l2*cos(theta2)
+
+		#This makes the plot
+		plot([0,x1,x2], [0,y1,y2], legend=false, size=(500,500))
+		scatter!([(x1,y1),(x2,y2)])
+
+		#This sets the limits
+		xlims!(-size, size)
+		ylims!(-size, size)
+
+		#This sets up an annotation so that we can read the time
+		annotate!(-0.8*size,0.9*size,text(string("Time: ",round(Int, t))), :left)
+	end
+end
+
+# ╔═╡ 4ca33875-5f46-40da-973c-ac1871d97661
+begin
+	function animation(gif)
+		anim = @animate for i in eachindex(cwic_tr)
+			gif_maker(gif[:,i,], cwic_tr[i], p[3], p[4])
+		end
+	end
+end
+
+# ╔═╡ 71ab990b-62fc-427b-a6b1-cbada0d92375
+gif(animation(gif_regular), "Propane Nightmare regular.gif", fps=33)
+
+# ╔═╡ 6388ac42-e18f-45af-b074-b921746f2a27
+gif(animation(gif_chaotic), "Propane Nightmare chaotic.gif", fps=33)
+
+# ╔═╡ 4c59b52a-55c2-4843-bb25-be912e2b5d7e
+gif(animation(gif_stable), "Propane Nightmare stable island.gif", fps=33)
 
 # ╔═╡ f17b837a-0acb-478d-9ae4-6a763a51cca3
 begin
 	function lya(con, t_final, t_step, algo)
-		dt = t_final/t_step #This finds the change in time that is needed for the lyapunov() function
-		diffeq = (alg = algo, abstol = 1e-9, reltol = 1e-9) #This sets up a few things such as algorithm and tolerance
-		pendy = CoupledODEs(pendulum, con, p; diffeq) #This solves a Coupled ODE using the defined things
-		exponent = lyapunov(pendy, tstep; Δt = dt) #This finds the Lyapunov exponent
+		dt = t_final/t_step
+		diffeq = (alg = algo, abstol = 1e-9, reltol = 1e-9)
+		pendy = CoupledODEs(pendulum, con, p; diffeq)
+		exponent = lyapunov(pendy, tstep; Δt = dt)
 	end
 end
 
 # ╔═╡ ec1e3719-e459-4662-923c-577f9a365ae1
-lya(s, tf, tstep, alg[3]) #This finds the lyapunov exponent for a given initial condition
+lya(s, tf, tstep, alg[3])
 
 # ╔═╡ 453d2fc8-82f9-4de9-b678-ff5e6ae43c3e
 begin
-	M = 10 #This is how many steps there are
-	θ = LinRange(-pi,pi,M) #This sets up both angles
+	M = 40
+	θ = LinRange(-pi,pi,M)
 	amount = collect(1:length(θ))
-	lyapunov_matrix = zeros(M, M) #This sets up an empty matrix
+	lyapunov_matrix = zeros(M, M)
 	@floop for i in amount, j in amount
-			condition = [θ[i], θ[j], 0, 0] #This sets the initial conditions
-			punov = lya(condition, tf, tstep, alg[3]) #This finds the Lyapunov exponent (punov is to differentate it from the exponent variable in lya, but it is the same thing)
-			lyapunov_matrix[i,j] = punov #This puts punov into the matrix
+			condition = [θ[i], θ[j], 0, 0]
+			punov = lya(condition, tf, tstep, alg[3])
+			lyapunov_matrix[i,j] = punov
 		end
 	end
 
 # ╔═╡ a7cdb808-b98c-449c-95e3-7b9e77648b10
 begin
-	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ1 (radians)", yaxis = "θ2 (radians)") #This plots the lyapunov exponents as a heatmap
+	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)")
 end
 
 # ╔═╡ 90c41cb6-0b91-4dff-abb1-81425d73544b
 begin
-	heatmap(θ, θ, lyapunov_matrix, title = "Regions of chaotic and non-chaotic motion", xaxis = "θ1 (radians)", yaxis = "θ2 (radias)", clims = (0,1)) #This is the heat map of the lyapunov exponents but scales it so that the chaotic parts are yellow
+	heatmap(θ, θ, lyapunov_matrix, title = "Regions of chaotic and non-chaotic motion", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)", clims = (0,1))
 end
 
 # ╔═╡ 28e8fa88-68a4-4e5d-be49-74e9910766fa
@@ -2229,7 +2310,7 @@ version = "1.4.1+0"
 # ╠═4df03b26-18b8-4303-97aa-2d3d2e15611c
 # ╟─2f5a0ca2-67d7-4a8d-9283-67c1448e0ad1
 # ╟─8b1de72b-3f09-42e7-aeb7-0b6a3d5a8091
-# ╟─efe1e3f0-3bbe-4522-b13e-e0393bf8b431
+# ╠═efe1e3f0-3bbe-4522-b13e-e0393bf8b431
 # ╟─325dd681-c79b-4563-be1a-8f51f5c01742
 # ╟─bf90d8ba-b78e-4882-8325-277060ab96e7
 # ╟─944b22eb-7ad9-4c7f-8322-1fff5a6aaed0
@@ -2243,10 +2324,19 @@ version = "1.4.1+0"
 # ╠═89d10b57-6394-4ee1-b87b-dca76b32608f
 # ╠═a2a7f0fb-52e6-4b37-9cb5-b71dafd4b471
 # ╠═7a61e8b3-014c-4dc6-8647-fbf7c37f52f6
-# ╠═9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
+# ╟─9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
 # ╟─5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
-# ╠═7971ab29-c7c7-44ab-92c8-d529d54159bc
-# ╠═59492867-d943-4078-8906-c12ddf0bc2c3
+# ╟─7971ab29-c7c7-44ab-92c8-d529d54159bc
+# ╟─59492867-d943-4078-8906-c12ddf0bc2c3
+# ╟─8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
+# ╠═fe7a0702-bc6f-45ed-b026-8a1cf768a85c
+# ╟─e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
+# ╟─822037d4-cc95-4168-b7d8-483a79cbde15
+# ╟─dc140cd1-920b-4cab-9c1c-c2bb90f01166
+# ╠═4ca33875-5f46-40da-973c-ac1871d97661
+# ╟─71ab990b-62fc-427b-a6b1-cbada0d92375
+# ╟─6388ac42-e18f-45af-b074-b921746f2a27
+# ╟─4c59b52a-55c2-4843-bb25-be912e2b5d7e
 # ╠═f17b837a-0acb-478d-9ae4-6a763a51cca3
 # ╠═ec1e3719-e459-4662-923c-577f9a365ae1
 # ╠═453d2fc8-82f9-4de9-b678-ff5e6ae43c3e
