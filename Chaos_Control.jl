@@ -135,7 +135,7 @@ begin
 		dth[1] = th[3] #This is the time derivative of θ_1
 		dth[2] = th[4] #This is the time derivative of θ_2
 
-		ds = sin(th[1] - th[2]) #This sets up sin(Δθ)
+		ds = th[1] - th[2] #This sets up sin(Δθ)
 		
 		dth[3] = (m2*l1*((th[3])^2)*sin(2*ds)+2*m2*l2*((th[4])^2)*sin(ds)+2g*m2*cos(th[2])*sin(ds)+2*g*m1*sin(th[1])) / (-2*l1*(m1+(m2*sin(ds)^2))) #This monstrosity is the time derivative of ω_1
 		dth[4] = (m2*l2*((th[4])^2)*sin(2*ds)+2*(m1+m2)*l1*((th[3])^2)*sin(ds)+2*g*(m1+m2)*cos(th[1])*sin(ds)) / (2*l2*(m1+(m2*(sin(ds))^2))) #This monstrosity is the time derivative of ω_2
