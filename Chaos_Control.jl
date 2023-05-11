@@ -145,8 +145,8 @@ end
 # ╔═╡ 0e8d7bf3-c127-4d61-8d50-20144bec434f
 begin
 	p = [1 1 1 1 9.81] #This sets up our parameters in the order of m1, m2, l1, l2, and g
-	th1 =  -2.1#Inital condition of θ_1
-	th2 = 1.2 #Initial conditon of θ_2
+	th1 =  -2.0#Inital condition of θ_1
+	th2 = -1.55 #Initial conditon of θ_2
 	w1 = 0.0 #Initial condition of ω_1
 	w2 = 0.0 #Initial condition of ω_2
 	s = [th1;th2;w1;w2]
@@ -233,7 +233,7 @@ end
 begin
 	s_regular = [0.25pi, 0.25pi, 0, 0]
 	s_chaotic = [pi, pi, 0, 0]
-	s_stable = [-2.1, 1.2, 0, 0]
+	s_stable = [-2.0, -1.55, 0, 0]
 end
 
 # ╔═╡ fe7a0702-bc6f-45ed-b026-8a1cf768a85c
@@ -2328,15 +2328,15 @@ version = "1.4.1+0"
 # ╟─5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
 # ╟─7971ab29-c7c7-44ab-92c8-d529d54159bc
 # ╟─59492867-d943-4078-8906-c12ddf0bc2c3
-# ╟─8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
+# ╠═8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
 # ╠═fe7a0702-bc6f-45ed-b026-8a1cf768a85c
-# ╟─e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
+# ╠═e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
 # ╟─822037d4-cc95-4168-b7d8-483a79cbde15
-# ╟─dc140cd1-920b-4cab-9c1c-c2bb90f01166
+# ╠═dc140cd1-920b-4cab-9c1c-c2bb90f01166
 # ╠═4ca33875-5f46-40da-973c-ac1871d97661
-# ╟─71ab990b-62fc-427b-a6b1-cbada0d92375
-# ╟─6388ac42-e18f-45af-b074-b921746f2a27
-# ╟─4c59b52a-55c2-4843-bb25-be912e2b5d7e
+# ╠═71ab990b-62fc-427b-a6b1-cbada0d92375
+# ╠═6388ac42-e18f-45af-b074-b921746f2a27
+# ╠═4c59b52a-55c2-4843-bb25-be912e2b5d7e
 # ╠═f17b837a-0acb-478d-9ae4-6a763a51cca3
 # ╠═ec1e3719-e459-4662-923c-577f9a365ae1
 # ╠═453d2fc8-82f9-4de9-b678-ff5e6ae43c3e
