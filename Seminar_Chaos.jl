@@ -5,7 +5,10 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ f4bf6540-eec7-11ed-15be-55f2d3e83e2a
-using PlutoUI, DifferentialEquations, Plots, ChaosTools, LaTeXStrings, Measures, FLoops
+using PlutoUI, DifferentialEquations,  ChaosTools, FLoops
+
+# ╔═╡ 95b6473a-906b-47b1-87f6-6daed1597409
+using Plots, LaTeXStrings, Measures
 
 # ╔═╡ 588511b2-cb31-46e3-8210-8a5b0e691277
 md"""
@@ -448,15 +451,67 @@ gif(animation(gif_chaotic), "Propane Nightmare chaotic.gif", fps=33)
 # ╔═╡ b0c4c9ac-8831-418f-ae21-4e51e2dc7579
 gif(animation(gif_stable), "Propane Nightmare stable island.gif", fps=33)
 
+# ╔═╡ 5230e429-70eb-4c21-a2b4-38e8592c453d
+begin
+	print("Lyapunov exponent for the regular scenario: ", lya(s_regular, tf, tstep, alg[3]), "\n")
+	print("Lyapunov exponent for the chaotic scenario: ", lya(s_chaotic, tf, tstep, alg[3]), "\n")
+	print("Lyapunov exponent for the mystery scenario: ", lya(s_mystery, tf, tstep, alg[3]), "\n")
+end
+
 # ╔═╡ 007aa05d-1320-45fe-9ed3-ff811aab591e
 begin
 	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ1 (radians)", yaxis = "θ2 (radians)") #This plots the lyapunov exponents as a heatmap
 end
 
+# ╔═╡ a463a256-77e9-4520-815e-5ecae67ffe3f
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_1,600_calc.png?raw=true"))
+"""
+
+# ╔═╡ ae2fdd23-a02f-4b46-b817-219ebdb0513e
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_10,000_calc.png?raw=true"))
+"""
+
+# ╔═╡ 02789133-f0f3-49ad-86d0-76e6efe4bdfc
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_40,000_calc.png?raw=true"))
+"""
+
+# ╔═╡ 2fe1fa58-b848-431f-b30e-c2c9a777c95d
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_40,000_calc_zoomed.png?raw=true"))
+"""
+
+# ╔═╡ 95efbe4b-7103-403b-bb34-5fa5b4cf2648
+md"""
+Below here are the scaled Lyapunov heatmaps.
+"""
+
 # ╔═╡ efc02bcb-7e16-4f7f-96ea-14c5993de68e
 begin
 	heatmap(θ, θ, lyapunov_matrix, title = "Regions of chaotic and non-chaotic motion", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)", clims = (0,1)) #This is the heat map of the lyapunov exponents but scales it so that the chaotic parts are yellow
 end
+
+# ╔═╡ 5153bf59-c64c-4f44-bdb4-821c8b6c796a
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_1,600_calc.png?raw=true"))
+"""
+
+# ╔═╡ f7b95946-fd04-455f-a1fd-ee2aabb0346e
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_10,000_calc.png?raw=true"))
+"""
+
+# ╔═╡ 045f1615-c841-41ec-b26c-589e8acf55e7
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_40,000_calc.png?raw=true"))
+"""
+
+# ╔═╡ f4e509c1-8a8f-40ee-a6f7-b4862f7cda87
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_40,000_calc_zoomed.png?raw=true"))
+"""
 
 # ╔═╡ 91d906ec-4631-43ae-bcb8-379a8a801615
 md"""
@@ -2411,6 +2466,7 @@ version = "1.4.1+0"
 # ╟─588511b2-cb31-46e3-8210-8a5b0e691277
 # ╟─cf668ddb-1687-4fbf-88da-738b83da20f0
 # ╠═f4bf6540-eec7-11ed-15be-55f2d3e83e2a
+# ╠═95b6473a-906b-47b1-87f6-6daed1597409
 # ╟─06f81be3-964c-4051-a6a7-cf5bf53ce27b
 # ╟─cd9baf06-33d6-4c56-9fab-c5f800106400
 # ╟─e665f127-a7aa-44f9-b4d1-5f8d84c99317
@@ -2467,8 +2523,18 @@ version = "1.4.1+0"
 # ╟─92af1e1e-cc68-4011-a639-1cc6d82aaa45
 # ╟─f22ac692-78c1-4989-a824-c0ee49909dc9
 # ╟─b0c4c9ac-8831-418f-ae21-4e51e2dc7579
-# ╠═007aa05d-1320-45fe-9ed3-ff811aab591e
-# ╠═efc02bcb-7e16-4f7f-96ea-14c5993de68e
+# ╠═5230e429-70eb-4c21-a2b4-38e8592c453d
+# ╟─007aa05d-1320-45fe-9ed3-ff811aab591e
+# ╟─a463a256-77e9-4520-815e-5ecae67ffe3f
+# ╟─ae2fdd23-a02f-4b46-b817-219ebdb0513e
+# ╟─02789133-f0f3-49ad-86d0-76e6efe4bdfc
+# ╟─2fe1fa58-b848-431f-b30e-c2c9a777c95d
+# ╟─95efbe4b-7103-403b-bb34-5fa5b4cf2648
+# ╟─efc02bcb-7e16-4f7f-96ea-14c5993de68e
+# ╟─5153bf59-c64c-4f44-bdb4-821c8b6c796a
+# ╟─f7b95946-fd04-455f-a1fd-ee2aabb0346e
+# ╟─045f1615-c841-41ec-b26c-589e8acf55e7
+# ╟─f4e509c1-8a8f-40ee-a6f7-b4862f7cda87
 # ╟─91d906ec-4631-43ae-bcb8-379a8a801615
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
