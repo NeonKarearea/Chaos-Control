@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ ad6884ce-cd1a-4380-bac5-e93ada49a5d3
-using DifferentialEquations, Plots, ChaosTools, FLoops
+using DifferentialEquations, Plots, ChaosTools, FLoops, LaTeXStrings, Measures
 
 # ╔═╡ f1ee5416-2778-4f35-aa94-452a47029e6e
 using PlutoUI
@@ -94,43 +94,13 @@ There are two main checks we can run to see if out model works, those are the fo
 Once we have that, we need to determine the Lyapunov exponents. We can use the package ChaosTools.jl to help with that. We can use the function ChaosTools.lyapunovspectrum() to find the range of possible Lyapunov exponents.$^{[11]}$ We can also just use ChaosTools.lyapunov() to get the largest exponent.$^{[11]}$ We can also see if the Lyapunov exponents are correct by checking where the regular motion is and confirming that it is periodic.
 """
 
-# ╔═╡ 944b22eb-7ad9-4c7f-8322-1fff5a6aaed0
-md"""
-## Citations
-[1]: Strogatz, S. H. (2015). *Nonlinear Dynamics and Chaos With Applications to Physics, Biology, Chemistry, and Engineering*. Westview Press.
-
-[2]: Gray, J. John (2022, July 13). *Henri Poincaré. Encyclopedia Britannica.* https://www.britannica.com/biography/Henri-Poincare
-
-[3]: Wolfram MathWorld (n.d.). *Logistic Map*. https://mathworld.wolfram.com/LogisticMap.html
-
-[4]: Bradley, A., & Seppälä, A., (n.d.). *Chaos-I Lecture: Logistic Map*.
-
-[5]: Bradley, A., & Seppälä, A., (n.d.). *Chaos-II Lecture*.
-
-[6]: Britannica, T. Editors of Encyclopaedia (2023, February 19). *Chaos theory. Encyclopedia Britannica*. https://www.britannica.com/science/chaos-theory
-
-[7]: Chen, J. (2008). Chaos from Simplicity: An Introduction to the Double Pendulum. *University of Cantebury*. 2-4.
-
-[8]: Laser Interferometer Gravitational-Wave Observatory (n.d.). *LIGO R&D: Crackling Noise in Gravitational Wave Detectors*. https://www.ligo.caltech.edu/page/research-development
-
-[9]: DifferentialEquations.jl (n.d.). *Solver Algorithms / ODE Solvers*. https://docs.sciml.ai/DiffEqDocs/stable/solvers/ode_solve/
-
-[10]: Chen, J. (2008). Chaos from Simplicity: An Introduction to the Double Pendulum. *University of Cantebury*. 5.
-
-[11]: ChoasTools.jl (n.d.). *Lyapunov Exponents*. https://juliadynamics.github.io/ChaosTools.jl/dev/lyapunovs/
-
-*Fig. 1*: By Jordan Pierce - Own work, CC0, https://commons.wikimedia.org/w/index.php?curid=16445229
-
-*Fig. 2*: Improving efficiency of piezoelectric based energy harvesting from human motions using double pendulum system - Scientific Figure on ResearchGate. Available from: https://www.researchgate.net/figure/Double-pendulum-system_fig1_331024972 [accessed 6 Apr, 2023]
-"""
-
 # ╔═╡ 54632226-e103-442b-8280-2315dfe3a193
 md"""
-# It's Modelling Time """
+# Code """
 
 # ╔═╡ e69175b4-c5a8-43f8-84a1-dae852f6dda7
 begin
-	function pendulum(dth, th, para, t)
+	function pendulum(dth, th, para, t) #This is the pendulum function
 		m1, m2, l1, l2, g = para #This imports our parameters
 		dth[1] = th[3] #This is the time derivative of θ_1
 		dth[2] = th[4] #This is the time derivative of θ_2
@@ -145,11 +115,6 @@ end
 # ╔═╡ 0e8d7bf3-c127-4d61-8d50-20144bec434f
 begin
 	p = [1 1 1 1 9.81] #This sets up our parameters in the order of m1, m2, l1, l2, and g
-	th1 =  -2.0#Inital condition of θ_1
-	th2 = -1.55 #Initial conditon of θ_2
-	w1 = 0.0 #Initial condition of ω_1
-	w2 = 0.0 #Initial condition of ω_2
-	s = [th1;th2;w1;w2]
 	ti = 0 #Initial time
 	tf = 30 #Final time
 	tstep = 10000
@@ -157,22 +122,57 @@ begin
 	tr = LinRange(ti,tf,tstep)
 end
 
+# ╔═╡ 8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
+begin
+	#These are the initial conditions for the animations
+	s_regular = [0.25pi, 0.25pi, 0, 0]
+	s_chaotic = [pi, pi, 0, 0]
+	s_mystery = [2.139, 1.592, 0, 0]
+end
+
 # ╔═╡ e80dc8b6-c1a7-4bb8-96c5-8bea54a9bf55
 begin
-	prob = ODEProblem(pendulum, s, (ti,tf), p) #This sets up the problem
+	function problem_solver(s, alg, trange) #This function is for solving problems
+		prob = ODEProblem(pendulum, s, (ti,tf), p) #This sets up the problem
+		solved = solve(prob, alg, saveat=trange) #This solves it.
+		return solved
+	end
 end
 
 # ╔═╡ 977b78a0-cc31-4346-ab9c-305b9010b69f
-solved_alg1 = solve(prob,alg[1],saveat=tr); #This solves it with Tsit5
+begin
+	solved_regular_alg1 = problem_solver(s_regular, alg[1], tr) #This solves the regular problem with Tsit5
+	solved_chaotic_alg1 = problem_solver(s_chaotic, alg[1], tr) #This solves the chaotic problem with Tsit5
+	solved_mystery_alg1 = problem_solver(s_mystery, alg[1], tr) #This solves the mystery problem with Tsit5
+end
 
 # ╔═╡ c4d17b85-7606-4ed5-b437-69c83497bda1
-solved_alg2 = solve(prob,alg[2],saveat=tr); #This solves it with TanYam7
+begin
+	solved_regular_alg2 = problem_solver(s_regular, alg[2], tr) #This solves the regular problem with TanYam7
+	solved_chaotic_alg2 = problem_solver(s_chaotic, alg[2], tr) #This solves the chaotic problem with TanYam7
+	solved_mystery_alg2 = problem_solver(s_mystery, alg[2], tr) #This solves the mystery problem with TamYam7
+end
 
 # ╔═╡ 5d4f123c-5630-48ca-b41a-a96bee90a60d
-solved_alg3 = solve(prob,alg[3],saveat=tr); #This solves it with Vern7
+begin
+	solved_regular_alg3 = problem_solver(s_regular, alg[3], tr) #This solves the regular problem with Vern6
+	solved_chaotic_alg3 = problem_solver(s_chaotic, alg[3], tr) #This solves the chaotic problem with Vern6
+	solved_mystery_alg3 = problem_solver(s_mystery, alg[3], tr) #This solves the mystery problem with Vern6
+end
 
 # ╔═╡ 89d10b57-6394-4ee1-b87b-dca76b32608f
-solved_alg4 = solve(prob,alg[4],saveat=tr); #This solves it with TsitPap8
+begin
+	solved_regular_alg4 = problem_solver(s_regular, alg[4], tr) #This solves the regular problem with Midpoint
+	solved_chaotic_alg4 = problem_solver(s_chaotic, alg[4], tr) #This solves the chaotic problem with Midpoint
+	solved_mystery_alg4 = problem_solver(s_mystery, alg[4], tr) #This solves the mystery problem with Midpoint
+end
+
+# ╔═╡ 4508ce9f-673a-435f-8f6d-d79c0d02878f
+begin
+	sol_set_regular = [solved_regular_alg1, solved_regular_alg2, solved_regular_alg3, solved_regular_alg4] #This is the regular solution set.
+	sol_set_chaotic = [solved_chaotic_alg1, solved_chaotic_alg2, solved_chaotic_alg3, solved_chaotic_alg4] #This is the chaotic solution set.
+	sol_set_mystery = [solved_mystery_alg1, solved_mystery_alg2, solved_mystery_alg3, solved_mystery_alg4] #This is the stable solution set.
+end
 
 # ╔═╡ a2a7f0fb-52e6-4b37-9cb5-b71dafd4b471
 begin
@@ -203,37 +203,67 @@ end
 
 # ╔═╡ 7a61e8b3-014c-4dc6-8647-fbf7c37f52f6
 begin
-	dE1 = energy_change(solved_alg1)
-	dE2 = energy_change(solved_alg2)
-	dE3 = energy_change(solved_alg3)
-	dE4 = energy_change(solved_alg4)
-	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)")
+	function E_plot(sol_set, layout) #This function can plot 4 different solutions, and depending on the parsed tuple, can create different layouts.
+		dE1 = energy_change(sol_set[1])
+		dE2 = energy_change(sol_set[2])
+		dE3 = energy_change(sol_set[3])
+		dE4 = energy_change(sol_set[4])
+		plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy\nover time",labels=["Tsit5" "TanYam7" "Vern6" "Midpoint"],xaxis=L"Time $(s)$",yaxis=L"Energy $(J)$", legend=:outerright, layout=layout)
+	end
 end
 
-# ╔═╡ 9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
+# ╔═╡ 103a140b-5b45-41db-82eb-8339ddcd4854
 begin
-	plot(tr,[dE1, dE2, dE3, dE4],title="Change in energy over time",labels=["Tsit5()" "TanYam7()" "Vern6()" "Midpoint()"],xaxis="Time (s)",yaxis="Energy (J)", layout=(2,2), legend=:topleft)
+	function theta_truncate(X) #This will restrict theta to -pi and pi
+		theta1 = X[1,:] #This is theta 1
+		theta2 = X[2,:] #This is theta 2
+
+		#Everything below here is to shift the angles around so they stay in between -pi and pi
+		for i in 1:length(theta1)
+			#Below here is for theta 1
+			if theta1[i] > pi
+				for j in i:(length(theta1))
+					theta1[j] = theta1[j]-(2*pi)
+				end
+				
+			elseif theta1[i] < -pi
+				for j in i:(length(theta1))
+					theta1[j] = theta1[j]+(2*pi)
+				end
+			end
+
+			#Below here is for theta 2. We do use length(theta2) here just because as I was writing this it was easier for me to remember that we are wothing with theta 2. It is the same as length(theta1)
+			if theta2[i] > pi
+				for j in i:(length(theta2))
+					theta2[j] = theta2[j]-(2*pi)
+				end
+
+			elseif theta2[i] < -pi
+				for j in i:(length(theta2))
+					theta2[j] = theta2[j]+(2*pi)
+				end
+			end
+			
+		end
+		return [theta1, theta2]
+	end
 end
 
-# ╔═╡ 5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
-md"""
-We will use Vern 6. While Midpoint() does give the expected result for π, π it is not enough resolution."""
-
-# ╔═╡ 7971ab29-c7c7-44ab-92c8-d529d54159bc
+# ╔═╡ 5a8a72f1-617f-4c8d-8040-ce381c3bd51b
 begin
-	plot(tr, [solved_alg3[1,:], solved_alg3[2,:]], labels=["θ1" "θ2"])
+	#Everything below here restricts the thetas from the different scenarios between -pi and pi
+	restricted_solved_regular = theta_truncate(solved_regular_alg3)
+	restricted_solved_chaotic = theta_truncate(solved_chaotic_alg3)
+	restricted_solved_mystery = theta_truncate(solved_mystery_alg3)
 end
 
-# ╔═╡ 59492867-d943-4078-8906-c12ddf0bc2c3
+# ╔═╡ 11c46958-f641-443b-8214-57d5d6232114
 begin
-	plot(tr, [solved_alg3[3,:], solved_alg3[4,:]], labels = ["ω1" "ω2"], legend=:topleft)
-end
+	#The part below will get all of the theta solutions
+	solutions_theta = [restricted_solved_regular[1,:], restricted_solved_chaotic[1,:], restricted_solved_mystery[1,:], restricted_solved_regular[2,:], restricted_solved_chaotic[2,:], restricted_solved_mystery[2,:]]
 
-# ╔═╡ 8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
-begin
-	s_regular = [0.25pi, 0.25pi, 0, 0]
-	s_chaotic = [pi, pi, 0, 0]
-	s_stable = [-2.0, -1.55, 0, 0]
+	#The part below will get all of the omega solutions
+	solutions_omega = [solved_regular_alg3[3,:], solved_chaotic_alg3[3,:], solved_mystery_alg3[3,:], solved_regular_alg3[4,:], solved_chaotic_alg3[4,:], solved_mystery_alg3[4,:]]
 end
 
 # ╔═╡ fe7a0702-bc6f-45ed-b026-8a1cf768a85c
@@ -245,28 +275,25 @@ end
 # ╔═╡ e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
 begin
 	#This is the regular zone
-	cwic_prob_regular = ODEProblem(pendulum, s_regular, (ti,tf), p)
-	cwic_solved_regular = solve(cwic_prob_regular, alg[3], saveat=cwic_tr)
+	cwic_solved_regular = problem_solver(s_regular, alg[3], cwic_tr)
 
 	#This is the chaotic zone
-	cwic_prob_chaotic = ODEProblem(pendulum, s_chaotic, (ti,tf), p)
-	cwic_solved_chaotic = solve(cwic_prob_chaotic, alg[3], saveat=cwic_tr)
+	cwic_solved_chaotic = problem_solver(s_chaotic, alg[3], cwic_tr)
 	
-	#This is for the island of stability
-	cwic_prob_stable = ODEProblem(pendulum, s_stable, (ti,tf), p)
-	cwic_solved_stable = solve(cwic_prob_stable, alg[3], saveat=cwic_tr)
+	#This is for the mystery area
+	cwic_solved_mystery = problem_solver(s_mystery, alg[3], cwic_tr)
 end
 
 # ╔═╡ 822037d4-cc95-4168-b7d8-483a79cbde15
 begin
 	gif_regular = cwic_solved_regular[1:2,:]
 	gif_chaotic = cwic_solved_chaotic[1:2,:]
-	gif_stable = cwic_solved_stable[1:2,:]
+	gif_stable = cwic_solved_mystery[1:2,:]
 end
 
 # ╔═╡ dc140cd1-920b-4cab-9c1c-c2bb90f01166
 begin
-	function gif_maker(X,t,l1,l2)
+	function gif_maker(X,t,l1,l2) #This is the function that makes the animations.
 		theta1 = X[1]
 		theta2 = X[2]
 
@@ -288,7 +315,7 @@ begin
 		ylims!(-size, size)
 
 		#This sets up an annotation so that we can read the time
-		annotate!(-0.8*size,0.9*size,text(string("Time: ",round(Int, t))), :left)
+		annotate!(-0.75*size,0.9*size,text(string("Time: ",round(Int, t))), :left)
 	end
 end
 
@@ -301,50 +328,155 @@ begin
 	end
 end
 
-# ╔═╡ 71ab990b-62fc-427b-a6b1-cbada0d92375
-gif(animation(gif_regular), "Propane Nightmare regular.gif", fps=33)
-
-# ╔═╡ 6388ac42-e18f-45af-b074-b921746f2a27
-gif(animation(gif_chaotic), "Propane Nightmare chaotic.gif", fps=33)
-
-# ╔═╡ 4c59b52a-55c2-4843-bb25-be912e2b5d7e
-gif(animation(gif_stable), "Propane Nightmare stable island.gif", fps=33)
-
 # ╔═╡ f17b837a-0acb-478d-9ae4-6a763a51cca3
 begin
 	function lya(con, t_final, t_step, algo)
 		dt = t_final/t_step
 		diffeq = (alg = algo, abstol = 1e-9, reltol = 1e-9)
 		pendy = CoupledODEs(pendulum, con, p; diffeq)
-		exponent = lyapunov(pendy, tstep; Δt = dt)
+		exponent = lyapunov(pendy, t_final; Δt = dt)
+		return exponent
 	end
 end
 
 # ╔═╡ ec1e3719-e459-4662-923c-577f9a365ae1
-lya(s, tf, tstep, alg[3])
+begin
+	condition_set = [s_regular, s_chaotic, s_mystery]
+	for i in collect(1:length(condition_set))
+		print("Lyapunov exponent: ", lya(condition_set[i], tf, tstep, alg[3]), "\n")
+	end
+end
 
 # ╔═╡ 453d2fc8-82f9-4de9-b678-ff5e6ae43c3e
 begin
-	M = 40
-	θ = LinRange(-pi,pi,M)
-	amount = collect(1:length(θ))
+	M = 10
+	θ1 = LinRange(-pi,pi,M)
+	θ2 = LinRange(-pi,pi,M)
+	amount = collect(1:length(θ1))
 	lyapunov_matrix = zeros(M, M)
 	@floop for i in amount, j in amount
-			condition = [θ[i], θ[j], 0, 0]
+			condition = [θ1[i], θ2[j], 0, 0]
 			punov = lya(condition, tf, tstep, alg[3])
 			lyapunov_matrix[i,j] = punov
-		end
 	end
+end
+
+# ╔═╡ 30734d02-6f90-4e61-9bbf-427962c006b2
+md"""
+# Results
+"""
+
+# ╔═╡ e6d05053-cb78-409b-81e0-bed2809f22e6
+E_plot(sol_set_regular, (1,1)) #This is the energy plot of all of the regular solutions.
+
+# ╔═╡ 58a454d9-9143-4670-af2d-afcfbec8d525
+md"""
+*Fig. 3a: Change in energy over time for the regular system for all 4 algorithms (overlayed)*
+"""
+
+# ╔═╡ 0bc398af-08c8-4f8d-8ec4-f2edeeb9abaa
+E_plot(sol_set_regular, (2,2)) #This is all 4 energy plots for the different regular solutions.
+
+# ╔═╡ ebeb40b4-921a-44c6-b3d4-e080b7ae52f8
+md"""
+*Fig. 3b: Change in energy over time for the regular system for all 4 algorithms (not overlayed)*
+"""
+
+# ╔═╡ 828cab3f-e384-4c2e-9d1a-318da8590f5b
+E_plot(sol_set_chaotic, (1,1)) #This is the energy plot of all of the chaotic solutions
+
+# ╔═╡ b0cb9cb6-996d-456f-a1c4-86fcb252e451
+md"""
+*Fig. 4a: Change in energy over time for the chaotic system for all 4 algorithms (overlayed)*
+"""
+
+# ╔═╡ c0fe6e29-10f5-4ad7-ae2a-86bb2ad18328
+E_plot(sol_set_chaotic, (2,2)) #This is all 4 energy plots for the different chaotic solutions.
+
+# ╔═╡ ca9018f9-86e6-40b0-a6ee-69e49250a204
+md"""
+*Fig. 4b: Change in energy over time for the chaotic system for all 4 algorithms (not overlayed)*
+"""
+
+# ╔═╡ 43ead3ff-91f0-4b76-bd34-212bb63947bb
+E_plot(sol_set_mystery, (1,1)) #This is the energy plot of all of the stable solutions
+
+# ╔═╡ adba2dc4-25e9-4d87-9c5e-128cf3d55124
+md"""
+*Fig. 5a: Change in energy over time for the mystery system for all 4 algorithms (overlayed)*
+"""
+
+# ╔═╡ 41233050-479d-4d87-9030-40be85250ed0
+E_plot(sol_set_mystery, (2,2)) #This is all 4 energy plots for the different mystery solutions.
+
+# ╔═╡ 106686c6-9fb9-4204-9471-4599daa829e7
+md"""
+*Fig. 5b: Change in energy over time for the mystery system for all 4 algorithms (not overlayed)*
+"""
+
+# ╔═╡ f73f730d-d975-4180-ac7e-3375d77e3e94
+begin
+	plot(tr, [solutions_theta], labels=["θ1" "θ1" "θ1" "θ2" "θ2" "θ2"],   xlabel=L"Time $(s)$", ylabel=L"$\theta$ $(rad)$", title="Angle over time", layout=(3,1), size=(900,630), legend=:outerright, left_margin=0.5cm)
+end
+
+# ╔═╡ 709d90eb-bdf7-427f-8f68-3ff982dceba0
+md"""
+*Fig. 6: The angle over time for (from top to bottom); the regular system, the chaotic system, and the mystery system.*
+"""
+
+# ╔═╡ 88a89230-de14-40d9-8183-a327e63b7f83
+begin
+	plot(tr, [solutions_omega], labels=["ω1" "ω1" "ω1" "ω2" "ω2" "ω2"], layout=(3,1), title="Angular velocity over time", xlabel = L"Time $(s)$", ylabel=L"$\omega$ $(rad\;s^{-1})$", size=(900,630), legend=:outerright, left_margin=0.5cm)
+end
+
+# ╔═╡ 91516c64-aaea-4f3b-bc59-fa21e4ed7f2f
+md"""
+*Fig. 7: The anglular velocity over time for (from top to bottom); the regular system, the chaotic system, and the mystery system.*
+"""
+
+# ╔═╡ 71ab990b-62fc-427b-a6b1-cbada0d92375
+gif(animation(gif_regular), "Propane Nightmare regular.gif", fps=33)
+
+# ╔═╡ e0f28c50-d53d-4fc3-bed9-abd6f415b9fd
+md"""
+*Fig 8: Animation for the regular system.*
+"""
+
+# ╔═╡ 6388ac42-e18f-45af-b074-b921746f2a27
+gif(animation(gif_chaotic), "Propane Nightmare chaotic.gif", fps=33)
+
+# ╔═╡ 415353ac-48c4-4d63-a389-1caa48e30d73
+md"""
+*Fig. 9: Animation for the chaotic system.*
+"""
+
+# ╔═╡ 4c59b52a-55c2-4843-bb25-be912e2b5d7e
+gif(animation(gif_stable), "Propane Nightmare stable island.gif", fps=33)
+
+# ╔═╡ 130b16bc-4df7-4199-b017-e4dba16ca72f
+md"""
+*Fig. 10: Animation for the stable island scenario.*
+"""
 
 # ╔═╡ a7cdb808-b98c-449c-95e3-7b9e77648b10
 begin
-	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)")
+	heatmap(θ1, θ2, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)")
 end
+
+# ╔═╡ ce3868ff-ab76-40e3-ba3a-0c09db59d8c9
+md"""
+*Fig. 11: Heat map of the Lyapunov exponents (10 x 10)*
+"""
 
 # ╔═╡ 90c41cb6-0b91-4dff-abb1-81425d73544b
 begin
-	heatmap(θ, θ, lyapunov_matrix, title = "Regions of chaotic and non-chaotic motion", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)", clims = (0,1))
+	heatmap(θ1, θ2, lyapunov_matrix, title = "Regions of chaotic and non-chaotic motion", xaxis = "θ2 (radians)", yaxis = "θ1 (radians)", clims = (0,1))
 end
+
+# ╔═╡ 729c9c51-5cfc-4078-bc6a-a7bf5d13b637
+md"""
+*Fig. 12: Heat map of the Lyapunov exponents, capped at λ=1 (10 x 10)*
+"""
 
 # ╔═╡ 28e8fa88-68a4-4e5d-be49-74e9910766fa
 logistic_map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Logistic_Bifurcation_map_High_Resolution.png/1280px-Logistic_Bifurcation_map_High_Resolution.png";
@@ -363,12 +495,44 @@ $(Resource(double_pendulum_url))
 *Fig. 2: Double Pendulum*
 """
 
+# ╔═╡ 944b22eb-7ad9-4c7f-8322-1fff5a6aaed0
+md"""
+## Citations
+[1]: Strogatz, S. H. (2015). *Nonlinear Dynamics and Chaos With Applications to Physics, Biology, Chemistry, and Engineering*. Westview Press.
+
+[2]: Gray, J. John (2022, July 13). *Henri Poincaré. Encyclopedia Britannica.* https://www.britannica.com/biography/Henri-Poincare
+
+[3]: Wolfram MathWorld (n.d.). *Logistic Map*. https://mathworld.wolfram.com/LogisticMap.html
+
+[4]: Bradley, A., & Seppälä, A., (n.d.). *Chaos-I Lecture: Logistic Map*.
+
+[5]: Bradley, A., & Seppälä, A., (n.d.). *Chaos-II Lecture*.
+
+[6]: Britannica, T. Editors of Encyclopaedia (2023, February 19). *Chaos theory. Encyclopedia Britannica*. https://www.britannica.com/science/chaos-theory
+
+[7]: Chen, J. (2008). Chaos from Simplicity: An Introduction to the Double Pendulum. *University of Cantebury*. 2-4.
+
+[8]: Laser Interferometer Gravitational-Wave Observatory (n.d.). *LIGO R&D: Crackling Noise in Gravitational Wave Detectors*. https://www.ligo.caltech.edu/page/research-development
+
+[9]: DifferentialEquations.jl (n.d.). *Solver Algorithms / ODE Solvers*. https://docs.sciml.ai/DiffEqDocs/stable/solvers/ode_solve/
+
+[10]: Chen, J. (2008). Chaos from Simplicity: An Introduction to the Double Pendulum. *University of Cantebury*. 5.
+
+[11]: ChoasTools.jl (n.d.). *Lyapunov Exponents*. https://juliadynamics.github.io/ChaosTools.jl/dev/lyapunovs/
+
+*Fig. 1*: By Jordan Pierce - Own work, CC0, https://commons.wikimedia.org/w/index.php?curid=16445229
+
+*Fig. 2*: Improving efficiency of piezoelectric based energy harvesting from human motions using double pendulum system - Scientific Figure on ResearchGate. Available from: https://www.researchgate.net/figure/Double-pendulum-system_fig1_331024972 [accessed 6 Apr, 2023]
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ChaosTools = "608a59af-f2a3-5ad4-90b4-758bdf3122a7"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
@@ -376,6 +540,8 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 ChaosTools = "~3.0.2"
 DifferentialEquations = "~7.7.0"
 FLoops = "~0.2.1"
+LaTeXStrings = "~1.3.0"
+Measures = "~0.3.2"
 Plots = "~1.38.9"
 PlutoUI = "~0.7.50"
 """
@@ -386,7 +552,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "2c895de624de514616dabb70a65db5f18d6f3b24"
+project_hash = "34da30f3f14a1aa4151812721af8bee976255773"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -2313,37 +2479,59 @@ version = "1.4.1+0"
 # ╠═efe1e3f0-3bbe-4522-b13e-e0393bf8b431
 # ╟─325dd681-c79b-4563-be1a-8f51f5c01742
 # ╟─bf90d8ba-b78e-4882-8325-277060ab96e7
-# ╟─944b22eb-7ad9-4c7f-8322-1fff5a6aaed0
-# ╟─54632226-e103-442b-8280-2315dfe3a193
+# ╠═54632226-e103-442b-8280-2315dfe3a193
 # ╠═e69175b4-c5a8-43f8-84a1-dae852f6dda7
 # ╠═0e8d7bf3-c127-4d61-8d50-20144bec434f
+# ╠═8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
 # ╠═e80dc8b6-c1a7-4bb8-96c5-8bea54a9bf55
 # ╠═977b78a0-cc31-4346-ab9c-305b9010b69f
 # ╠═c4d17b85-7606-4ed5-b437-69c83497bda1
 # ╠═5d4f123c-5630-48ca-b41a-a96bee90a60d
 # ╠═89d10b57-6394-4ee1-b87b-dca76b32608f
+# ╟─4508ce9f-673a-435f-8f6d-d79c0d02878f
 # ╠═a2a7f0fb-52e6-4b37-9cb5-b71dafd4b471
 # ╠═7a61e8b3-014c-4dc6-8647-fbf7c37f52f6
-# ╟─9b6f37f7-1a50-4e82-8666-3ce5ec3524eb
-# ╟─5931f0a8-2adb-4082-a0c7-cd1d0d43c6c5
-# ╟─7971ab29-c7c7-44ab-92c8-d529d54159bc
-# ╟─59492867-d943-4078-8906-c12ddf0bc2c3
-# ╠═8be5aed3-74d8-4c49-9b32-b7e6ad4ab7c0
+# ╠═103a140b-5b45-41db-82eb-8339ddcd4854
+# ╠═5a8a72f1-617f-4c8d-8040-ce381c3bd51b
+# ╠═11c46958-f641-443b-8214-57d5d6232114
 # ╠═fe7a0702-bc6f-45ed-b026-8a1cf768a85c
 # ╠═e8367a30-8f04-4949-ab4a-d8ff3cc39b8e
 # ╟─822037d4-cc95-4168-b7d8-483a79cbde15
 # ╠═dc140cd1-920b-4cab-9c1c-c2bb90f01166
 # ╠═4ca33875-5f46-40da-973c-ac1871d97661
-# ╠═71ab990b-62fc-427b-a6b1-cbada0d92375
-# ╠═6388ac42-e18f-45af-b074-b921746f2a27
-# ╠═4c59b52a-55c2-4843-bb25-be912e2b5d7e
 # ╠═f17b837a-0acb-478d-9ae4-6a763a51cca3
-# ╠═ec1e3719-e459-4662-923c-577f9a365ae1
+# ╟─ec1e3719-e459-4662-923c-577f9a365ae1
 # ╠═453d2fc8-82f9-4de9-b678-ff5e6ae43c3e
-# ╠═a7cdb808-b98c-449c-95e3-7b9e77648b10
-# ╠═90c41cb6-0b91-4dff-abb1-81425d73544b
+# ╟─30734d02-6f90-4e61-9bbf-427962c006b2
+# ╟─e6d05053-cb78-409b-81e0-bed2809f22e6
+# ╟─58a454d9-9143-4670-af2d-afcfbec8d525
+# ╟─0bc398af-08c8-4f8d-8ec4-f2edeeb9abaa
+# ╟─ebeb40b4-921a-44c6-b3d4-e080b7ae52f8
+# ╟─828cab3f-e384-4c2e-9d1a-318da8590f5b
+# ╟─b0cb9cb6-996d-456f-a1c4-86fcb252e451
+# ╟─c0fe6e29-10f5-4ad7-ae2a-86bb2ad18328
+# ╟─ca9018f9-86e6-40b0-a6ee-69e49250a204
+# ╟─43ead3ff-91f0-4b76-bd34-212bb63947bb
+# ╟─adba2dc4-25e9-4d87-9c5e-128cf3d55124
+# ╟─41233050-479d-4d87-9030-40be85250ed0
+# ╟─106686c6-9fb9-4204-9471-4599daa829e7
+# ╟─f73f730d-d975-4180-ac7e-3375d77e3e94
+# ╟─709d90eb-bdf7-427f-8f68-3ff982dceba0
+# ╟─88a89230-de14-40d9-8183-a327e63b7f83
+# ╠═91516c64-aaea-4f3b-bc59-fa21e4ed7f2f
+# ╟─71ab990b-62fc-427b-a6b1-cbada0d92375
+# ╟─e0f28c50-d53d-4fc3-bed9-abd6f415b9fd
+# ╟─6388ac42-e18f-45af-b074-b921746f2a27
+# ╟─415353ac-48c4-4d63-a389-1caa48e30d73
+# ╟─4c59b52a-55c2-4843-bb25-be912e2b5d7e
+# ╟─130b16bc-4df7-4199-b017-e4dba16ca72f
+# ╟─a7cdb808-b98c-449c-95e3-7b9e77648b10
+# ╟─ce3868ff-ab76-40e3-ba3a-0c09db59d8c9
+# ╟─90c41cb6-0b91-4dff-abb1-81425d73544b
+# ╟─729c9c51-5cfc-4078-bc6a-a7bf5d13b637
 # ╟─f1ee5416-2778-4f35-aa94-452a47029e6e
 # ╟─28e8fa88-68a4-4e5d-be49-74e9910766fa
 # ╟─53475708-5d97-45db-a8f3-96a85b492b49
+# ╟─944b22eb-7ad9-4c7f-8322-1fff5a6aaed0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
