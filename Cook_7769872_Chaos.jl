@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.22
+# v0.19.25
 
 using Markdown
 using InteractiveUtils
@@ -8,6 +8,9 @@ using InteractiveUtils
 begin
 	using PlutoUI,OrdinaryDiffEq,Plots,ChaosTools
 end
+
+# ╔═╡ 0a7c87bb-e9d3-40a5-b7d6-00d78b76274b
+using FLoops
 
 # ╔═╡ a7c69b23-9129-4f4b-bbf9-0723ca994330
 PlutoUI.TableOfContents()
@@ -158,28 +161,67 @@ begin
 	N = 1001
 	t = LinRange(ti,tf,N)
 
+	m_1 = 1
+	m_2 = 1
+	l_1 = 1
+	l_2 = 1
+	g = 9.81
+
 	alg = Midpoint()
 
-	var_1 = 2,2,1,1,9.81
-	X_1 = [.25pi; .25pi; 0.0; 0.0]
+	del = 1*10^(-15)
+
+	var_1 = m_1,m_2,l_1,l_2,g
+	X_1 = [(0.5+(2*del))*pi; (0.5+(2*del))*pi; 0.0; 0.0]
+	X_2 = [(0.5+del)*pi; (0.5+del)*pi; 0.0; 0.0]
+	X_3 = [.5pi; .5pi; 0.0; 0.0]
+	X_4 = [(0.5-del)*pi; (0.5-del)*pi; 0.0; 0.0]
+	X_5 = [(0.5-(2*del))*pi; (0.5-(2*del))*pi; 0.0; 0.0]
 	diffeq = (alg = Vern6(), abstol = 1e-9, reltol = 1e-9)
 end
 
 # ╔═╡ dd7e2eee-4205-48da-bf17-1003aa4193f8
 t
 
+# ╔═╡ fdf8871c-a46e-46eb-8c4a-107b7663bfef
+t2 = LinRange(ti,tf,101)
+
+# ╔═╡ 9813c381-fc09-48c3-8f53-74c378d3ce3f
+t3 = LinRange(ti,50,5001)
+
+# ╔═╡ 36f469c7-fcb6-45c8-9836-ef8e04d89639
+time = copy(t3)
+
 # ╔═╡ d5b3fcd9-8aec-4464-8f94-4b5fc8ea376c
-prob1 = CoupledODEs(pendulum, X_1, var_1; diffeq)
+prob1 = CoupledODEs(pendulum, X_1, var_1; diffeq);
 
 # ╔═╡ fb0d92c3-ed29-4d60-a2bc-eac5121d86ce
-sol1, t1 = trajectory(prob1, N; Δt = t[2]-t[1])
+sol1, t_1 = trajectory(prob1, length(time); Δt = time[2]-time[1]);
+
+# ╔═╡ 6ea5938a-d063-49a1-b455-471ebda05633
+prob2 = CoupledODEs(pendulum, X_2, var_1; diffeq);
+
+# ╔═╡ 41ccd2a0-8cc8-4b32-8c4a-440eff95c09a
+sol2, t_2 = trajectory(prob2, length(time); Δt = time[2]-time[1]);
+
+# ╔═╡ 22a5c62d-375d-4c41-94f1-eaa12390a743
+begin
+	prob3 = CoupledODEs(pendulum, X_3, var_1; diffeq);
+	prob4 = CoupledODEs(pendulum, X_4, var_1; diffeq);
+	prob5 = CoupledODEs(pendulum, X_5, var_1; diffeq);
+
+	sol3, t_3 = trajectory(prob3, length(time); Δt = time[2]-time[1]);
+	sol4, t_4 = trajectory(prob4, length(time); Δt = time[2]-time[1]);
+	sol5, t_5 = trajectory(prob5, length(time); Δt = time[2]-time[1]);
+
+end
 
 # ╔═╡ 8d614d2d-a2c6-4721-aa80-1984949bc58b
 sol1[:,1:2]
 
 # ╔═╡ ebf5d093-1f31-4fa2-b0ae-2c1626f2b547
 begin
-	dt = t[2]-t[1]
+	dt = time[2]-time[1]
 	lyapunovspectrum(prob1,N,Δt = dt)
 end
 
@@ -187,21 +229,33 @@ end
 function show_mass(X,t,l_1,l_2)
 
 	sizePlot = 1.5*(l_1+l_2)
-	
-	θ_1 = X[1]
-	θ_2 = X[2]
+	sizeX = length(X)
 
-	x1 = l_1*sin(θ_1)
-	x2 = l_1*sin(θ_1) + l_2*sin(θ_2)
-	y1 = -l_1*cos(θ_1)
-	y2 = -l_1*cos(θ_1) - l_2*cos(θ_2)
+	x1 = zeros(sizeX)
+	x2 = zeros(sizeX)
+	y1 = zeros(sizeX)
+	y2 = zeros(sizeX)
 
+	colourX = ["red","blue","green","purple","orange"]
 
-	plot([0,x1,x2],[0,y1,y2],colour="gray",label="String",size=(500,500))
-	scatter!([(x1,y1),(x2,y2)],colour="red",label="Masses")
+	scatter([(0,0)],label=false,alpha = 0) #Reference point
+
+	for i in 1:sizeX
 	
+		θ_1 = X[i][1]
+		θ_2 = X[i][2]
 	
-	scatter!([(0,0)],colour="black",label="Center") #Center
+		x1[i] += l_1*sin(θ_1)
+		x2[i] += l_1*sin(θ_1) + l_2*sin(θ_2)
+		y1[i] += -l_1*cos(θ_1)
+		y2[i] += -l_1*cos(θ_1) - l_2*cos(θ_2)
+
+		plot!([0,x1[i],x2[i]],[0,y1[i],y2[i]],colour="gray",label=false,size=(500,500)) #String
+		scatter!([(x1[i],y1[i]),(x2[i],y2[i])],colour=colourX[i],label=string("Masses ",i))
+	end
+
+	scatter!([(0,0)],colour="black",label="Center") #Center	
+	
 	annotate!(-0.9*sizePlot,0.9*sizePlot,text(string("time = ",round(Int,t)), 8, :left))
 
 	
@@ -212,20 +266,96 @@ end
 # ╔═╡ c8ddbb93-b6bc-4264-81bf-fc64c2e5b6b5
 X1 = sol1[:,1:2]
 
+# ╔═╡ b0c3c64f-9736-4b76-84b6-12a30803c80a
+X2 = sol2[:,1:2];
+
+# ╔═╡ a83ec17e-27ee-4337-a909-456026bc615c
+X3 = sol3[:,1:2];
+
+# ╔═╡ e1440840-224f-4880-962e-e2436e462f2d
+X4 = sol4[:,1:2];
+
+# ╔═╡ 1de0578f-5b3a-4cb3-ad03-b7c4b172320e
+X5 = sol5[:,1:2]
+
+# ╔═╡ b6eaeb83-8208-4d7c-9cc6-55199681238d
+begin
+	X1_coords = zeros(length(X1),2);
+	X2_coords = zeros(length(X2),2);
+	X3_coords = zeros(length(X3),2);
+	X4_coords = zeros(length(X4),2);
+	X5_coords = zeros(length(X5),2);
+
+	for i in 1:length(X1)
+		X1_coords[i,1] = l_1*sin(X1[i,1]) + l_2*sin(X1[i,2]) #x2
+		X1_coords[i,2] = -l_1*cos(X1[i,1]) - l_2*cos(X1[i,2])#y2
+	end
+
+	for i in 1:length(X2)
+		X2_coords[i,1] = l_1*sin(X2[i,1]) + l_2*sin(X2[i,2]) #x2
+		X2_coords[i,2] = -l_1*cos(X2[i,1]) - l_2*cos(X2[i,2])#y2
+	end
+	for i in 1:length(X3)
+		X3_coords[i,1] = l_1*sin(X3[i,1]) + l_2*sin(X3[i,2]) #x2
+		X3_coords[i,2] = -l_1*cos(X3[i,1]) - l_2*cos(X3[i,2])#y2
+	end
+
+	for i in 1:length(X4)
+		X4_coords[i,1] = l_1*sin(X4[i,1]) + l_2*sin(X4[i,2]) #x2
+		X4_coords[i,2] = -l_1*cos(X4[i,1]) - l_2*cos(X4[i,2])#y2
+	end
+
+	for i in 1:length(X5)
+		X5_coords[i,1] = l_1*sin(X5[i,1]) + l_2*sin(X5[i,2]) #x2
+		X5_coords[i,2] = -l_1*cos(X5[i,1]) - l_2*cos(X5[i,2])#y2
+	end
+end
+
 # ╔═╡ 4814218e-08a8-4c02-a2d8-1c26c9306e31
-anim = @animate for i in eachindex(t)
-    show_mass(X1[i,:],t[i],1,1)
+anim = @animate for i in eachindex(time)
+    show_mass([X1[i,:],X2[i,:],X3[i,:],X4[i,:],X5[i,:]],time[i],l_1,l_2)
+
+	trailLength = 20
+	interval = i<=trailLength ? (1:i) : (i-trailLength+1:i)
+	plot!(X1_coords[interval,1],X1_coords[interval,2],label=false,colour="red",alpha=LinRange(0,1,trailLength))
+	plot!(X2_coords[interval,1],X2_coords[interval,2],label=false,colour="blue",alpha=LinRange(0,1,trailLength))
+	plot!(X3_coords[interval,1],X3_coords[interval,2],label=false,colour="green",alpha=LinRange(0,1,trailLength))
+	plot!(X4_coords[interval,1],X4_coords[interval,2],label=false,colour="purple",alpha=LinRange(0,1,trailLength))
+	plot!(X5_coords[interval,1],X5_coords[interval,2],label=false,colour="orange",alpha=LinRange(0,1,trailLength))
+
 end
 
 # ╔═╡ e1b27519-eb42-4c61-8dbe-bdc6313a2492
-gif(anim,"pendulum.gif",fps=25)
+gif(anim,"pendulum4.gif",fps=30)
+
+# ╔═╡ 4a1e3f1d-7182-478f-8068-9cd9e4ab1924
+X_6 = [2.139 ; 1.592; 0.0; 0.0]
+
+# ╔═╡ 09d42534-2542-49cc-9a1b-951a524504f1
+begin
+	prob6 = CoupledODEs(pendulum, X_6, var_1; diffeq);
+	sol6, t_6 = trajectory(prob6, length(time); Δt = time[2]-time[1]);
+end
+
+# ╔═╡ 1fcdb3c1-7092-4929-84ff-e149727ad682
+X6 = sol6[:,1:2];
+
+# ╔═╡ ef3c7887-6755-4b3f-af56-08610d0f19df
+anim2 = @animate for i in eachindex(time)
+    show_mass([X6[i,:]],time[i],l_1,l_2)
+end
+
+# ╔═╡ 8e85270e-a8bf-463e-b5f7-276c00f1fe1b
+gif(anim2,"pendulum5.gif",fps=25)
 
 # ╔═╡ a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
 begin #a-div(a,2pi)*2pi
-	x=zeros(N)
-	y=zeros(N)
-	largeAngleIndex=zeros(N)
-	for i in 1:N
+	
+	x=zeros(length(time))
+	y=zeros(length(time))
+	largeAngleIndex=[]
+	
+	for i in 1:length(time)
 
 		x[i]= X1[i,1] - div(X1[i,1],2pi)*2pi
 		y[i]= X1[i,2] - div(X1[i,2],2pi)*2pi
@@ -238,15 +368,84 @@ end
 # ╔═╡ 04b1e688-d42f-4f01-8aed-c01894220a4f
 largeAngleIndex
 
+# ╔═╡ eed8faf4-6aba-4c98-b2b9-e702f54e987a
+begin
+	plot(x[:],y[:],legend=false)
+	xlims!(-pi,pi)
+	ylims!(-pi,pi)
+end
+
+# ╔═╡ e853a196-1d8e-40e4-9eb2-f84dff74b85c
+begin
+	plot(time,[x,y],legend=false)
+	xlims!(0,tf-80)
+	ylims!(-pi,pi)
+end
+
+# ╔═╡ 30c7eca9-2e90-4bca-a475-0442c240ee0b
+time
+
+# ╔═╡ daeba561-729e-452d-8296-9ad6add6b675
+begin
+	θ_1 = copy(X1[:,1])
+	θ_2 = copy(X1[:,2])
+	index = [1]
+
+	for i in 1:length(θ_1)
+		if θ_1[i] > pi
+			push!(index,i)
+			for j in i:length(θ_1)
+				θ_1[j] = θ_1[j]-2pi
+			end
+		elseif θ_1[i] < -pi
+			push!(index,i)
+			for j in i:length(θ_1)
+				θ_1[j] = θ_1[j]+2pi
+			end
+		elseif θ_2[i] > pi
+			push!(index,i)
+			for j in i:length(θ_2)
+				θ_2[j] = θ_2[j]-2pi
+			end
+		elseif θ_2[i] < -pi
+			push!(index,i)
+			for j in i:length(θ_2)
+				θ_2[j] = θ_2[j]+2pi
+			end
+		end
+	end
+
+	push!(index,length(θ_1)+1)
+
+	plotsθ_1 = []
+	plotsθ_2 = []
+	times = []
+	num = collect(1:length(θ_1))
+
+	for i in 1:length(index)-1
+		q1 = θ_1[index[i]:index[i+1]-1]
+		q2 = θ_2[index[i]:index[i+1]-1]
+		push!(plotsθ_1,q1)
+		push!(plotsθ_2,q2)
+		
+		w = num[index[i]:index[i+1]-1]
+		push!(times,w)
+	end
+
+		scatter(num,θ_1)
+		plot!(times,plotsθ_1,legend=false)
+		xlims!(0,100)
+end
+
 # ╔═╡ 4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
 # ╠═╡ skip_as_script = true
 #=╠═╡
-anim2 = @animate for i in eachindex(t)
+anim3 = @animate for i in eachindex(time)
 	a=i
 	trailLength = 10
 	interval = a<=trailLength ? (1:a) : (a-trailLength:a)
 	
-	plot(x[interval],y[interval])
+	plot(θ_1[interval],θ_2[interval],legend=false)
 	scatter!((x[i],y[i]),size=(500,500),label=false)
 	xlims!(-pi,pi)
 	ylims!(-pi,pi)
@@ -256,8 +455,37 @@ end
 # ╔═╡ 24ffbfb3-9029-42da-a445-a74253bf1ef3
 # ╠═╡ skip_as_script = true
 #=╠═╡
-gif(anim2,"angle_comparison.gif",fps=20)
+gif(anim3,"angle_comparison.gif",fps=25)
   ╠═╡ =#
+
+# ╔═╡ af5ca849-920e-42d7-a7d4-a565bb50b241
+begin
+	plot(X1[:,1])
+	plot!(θ_1[:])
+	hline!([pi,-pi])
+end
+
+# ╔═╡ 62197f77-9ad1-4113-954d-0b5357a237f4
+begin
+	plot(plotsθ_1[1][1:15],plotsθ_2[1][1:15],legend=false)
+	xlims!(-pi,pi)
+	ylims!(-pi,pi)
+end
+
+# ╔═╡ 695367fa-3d7b-48a4-ab62-a02c99f2e3a3
+index
+
+# ╔═╡ a89f7f16-b119-4411-9cfc-0a5385d9a847
+plotsθ_1
+
+# ╔═╡ 0bb5218a-30b4-46b5-baa1-fd1938a23203
+begin
+	function lya(con, t_final, t_step)
+		dt = t_final/t_step
+		pendy = CoupledODEs(pendulum, con, var_1; diffeq)
+		exponent = lyapunov(pendy, t_step; Δt = dt)
+	end
+end
 
 # ╔═╡ 0aa6b76e-cd19-463d-9ec4-9154d725b93c
 md"""
@@ -275,12 +503,14 @@ md"""
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 ChaosTools = "608a59af-f2a3-5ad4-90b4-758bdf3122a7"
+FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 ChaosTools = "~3.0.2"
+FLoops = "~0.2.1"
 OrdinaryDiffEq = "~6.50.0"
 Plots = "~1.38.10"
 PlutoUI = "~0.7.50"
@@ -292,7 +522,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "b49703d5da801862ec831fcebaaf1598b3e49d19"
+project_hash = "f3bb01123810e3f63b7aafc317f8f31da3718df3"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -311,6 +541,11 @@ deps = ["LinearAlgebra", "Requires"]
 git-tree-sha1 = "cc37d689f599e8df4f464b2fa3870ff7db7492ef"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "3.6.1"
+
+[[deps.ArgCheck]]
+git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
+uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+version = "2.3.0"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -337,8 +572,19 @@ version = "0.1.29"
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
+[[deps.BangBang]]
+deps = ["Compat", "ConstructionBase", "Future", "InitialValues", "LinearAlgebra", "Requires", "Setfield", "Tables", "ZygoteRules"]
+git-tree-sha1 = "7fe6d92c4f281cf4ca6f2fba0ce7b299742da7ca"
+uuid = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
+version = "0.3.37"
+
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.Baselet]]
+git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
+uuid = "9718e550-a3fa-408a-8086-8db961cd8217"
+version = "0.1.1"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
@@ -468,11 +714,22 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.0.1+0"
 
+[[deps.CompositionsBase]]
+git-tree-sha1 = "455419f7e328a1a2493cabc6428d79e951349769"
+uuid = "a33af91c-f02d-484b-be07-31d278c5ca2b"
+version = "0.1.1"
+
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "89a9db8d28102b094992472d333674bd1a83ce2a"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
 version = "1.5.1"
+
+[[deps.ContextVariablesX]]
+deps = ["Compat", "Logging", "UUIDs"]
+git-tree-sha1 = "25cc3803f1030ab855e383129dcd3dc294e322cc"
+uuid = "6add18c4-b38d-439d-96f6-d6bc489c04c5"
+version = "0.1.3"
 
 [[deps.Contour]]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
@@ -510,6 +767,11 @@ version = "1.0.0"
 [[deps.Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
+[[deps.DefineSingletons]]
+git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
+uuid = "244e2a9f-e319-4986-a169-4d1fe445cd52"
+version = "0.1.2"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
@@ -628,6 +890,18 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "c6033cc3892d0ef5bb9cd29b7f2f0331ea5184ea"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.10+0"
+
+[[deps.FLoops]]
+deps = ["BangBang", "Compat", "FLoopsBase", "InitialValues", "JuliaVariables", "MLStyle", "Serialization", "Setfield", "Transducers"]
+git-tree-sha1 = "ffb97765602e3cbe59a0589d237bf07f245a8576"
+uuid = "cc61a311-1640-44b5-9fba-1b764f453329"
+version = "0.2.1"
+
+[[deps.FLoopsBase]]
+deps = ["ContextVariablesX"]
+git-tree-sha1 = "656f7a6859be8673bf1f35da5670246b923964f7"
+uuid = "b9860ae5-e623-471e-878b-f6a53c775ea6"
+version = "0.1.1"
 
 [[deps.FastBroadcast]]
 deps = ["ArrayInterface", "LinearAlgebra", "Polyester", "Static", "StaticArrayInterface", "StrideArraysCore"]
@@ -834,6 +1108,11 @@ git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.1"
 
+[[deps.InitialValues]]
+git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
+uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
+version = "0.3.1"
+
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "0cb9352ef2e01574eeebdb102948a58740dcaf83"
@@ -906,6 +1185,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6f2675ef130a300a112286de91973805fcc5ffbc"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.91+0"
+
+[[deps.JuliaVariables]]
+deps = ["MLStyle", "NameResolution"]
+git-tree-sha1 = "49fb3cb53362ddadb4415e9b73926d6b40709e70"
+uuid = "b14d175d-62b4-44ba-8fb7-3064adc8c3ec"
+version = "0.2.4"
 
 [[deps.KLU]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
@@ -1094,6 +1379,11 @@ git-tree-sha1 = "2ce8695e1e699b68702c03402672a69f54b8aca9"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2022.2.0+0"
 
+[[deps.MLStyle]]
+git-tree-sha1 = "bc38dff0548128765760c79eb7388a4b37fae2c8"
+uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
+version = "0.4.17"
+
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
 git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
@@ -1137,6 +1427,12 @@ git-tree-sha1 = "c13304c81eec1ed3af7fc20e75fb6b26092a1102"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.3.2"
 
+[[deps.MicroCollections]]
+deps = ["BangBang", "InitialValues", "Setfield"]
+git-tree-sha1 = "629afd7d10dbc6935ec59b32daeb33bc4460a42e"
+uuid = "128add7d-3638-4c79-886c-908ea0c25c34"
+version = "0.1.4"
+
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "f66bdc5de519e8f8ae43bdc598782d35a25b1272"
@@ -1178,6 +1474,12 @@ deps = ["OpenLibm_jll"]
 git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.0.2"
+
+[[deps.NameResolution]]
+deps = ["PrettyPrint"]
+git-tree-sha1 = "1a0fa0e9613f46c9b8c11eee38ebb4f590013c5e"
+uuid = "71a1bf82-56d0-4bbc-8a3c-48b961074391"
+version = "0.1.5"
 
 [[deps.NearestNeighbors]]
 deps = ["Distances", "StaticArrays"]
@@ -1373,6 +1675,11 @@ deps = ["TOML"]
 git-tree-sha1 = "47e5f437cc0e7ef2ce8406ce1e7e24d44915f88d"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.3.0"
+
+[[deps.PrettyPrint]]
+git-tree-sha1 = "632eb4abab3449ab30c5e1afaa874f0b98b586e4"
+uuid = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
+version = "0.2.0"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1596,6 +1903,12 @@ git-tree-sha1 = "ef28127915f4229c971eb43f3fc075dd3fe91880"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
 version = "2.2.0"
 
+[[deps.SplittablesBase]]
+deps = ["Setfield", "Test"]
+git-tree-sha1 = "e08a62abc517eb79667d0a29dc08a3b589516bb5"
+uuid = "171d559e-b47b-412a-8079-5efa626c420e"
+version = "0.1.15"
+
 [[deps.StateSpaceSets]]
 deps = ["Distances", "Distributions", "LinearAlgebra", "Neighborhood", "Random", "StaticArraysCore", "Statistics"]
 git-tree-sha1 = "4d2344a28a4d12a9a017a1f3b2bd0dfafa11153c"
@@ -1711,6 +2024,12 @@ deps = ["Random", "Test"]
 git-tree-sha1 = "0b829474fed270a4b0ab07117dce9b9a2fa7581a"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.9.12"
+
+[[deps.Transducers]]
+deps = ["Adapt", "ArgCheck", "BangBang", "Baselet", "CompositionsBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "Requires", "Setfield", "SplittablesBase", "Tables"]
+git-tree-sha1 = "25358a5f2384c490e98abd565ed321ffae2cbb37"
+uuid = "28d57a85-8fef-5791-bfe6-a80928e7c999"
+version = "0.4.76"
 
 [[deps.TriangularSolve]]
 deps = ["CloseOpenIntervals", "IfElse", "LayoutPointers", "LinearAlgebra", "LoopVectorization", "Polyester", "Static", "VectorizationBase"]
@@ -2012,24 +2331,49 @@ version = "1.4.1+0"
 # ╟─9402b760-d1c2-11ed-088d-55b30757b23d
 # ╟─640584cb-9ef2-4e5d-938e-34fcb188d9b1
 # ╟─23aaabfe-8d71-474d-85ce-460c923c9a61
-# ╟─a3af9025-b852-49b6-af2d-d90304e9ca72
+# ╠═a3af9025-b852-49b6-af2d-d90304e9ca72
 # ╟─f5b7687e-70c1-4fad-8a53-418f99299b5a
 # ╠═13dd63bd-5e4f-4d7e-94c6-297fe8ad745c
 # ╠═da112207-6c6b-483b-88b3-b86613c2907d
 # ╠═dd7e2eee-4205-48da-bf17-1003aa4193f8
+# ╠═fdf8871c-a46e-46eb-8c4a-107b7663bfef
+# ╠═9813c381-fc09-48c3-8f53-74c378d3ce3f
+# ╠═36f469c7-fcb6-45c8-9836-ef8e04d89639
 # ╠═d5b3fcd9-8aec-4464-8f94-4b5fc8ea376c
 # ╠═fb0d92c3-ed29-4d60-a2bc-eac5121d86ce
+# ╠═6ea5938a-d063-49a1-b455-471ebda05633
+# ╠═41ccd2a0-8cc8-4b32-8c4a-440eff95c09a
+# ╠═22a5c62d-375d-4c41-94f1-eaa12390a743
 # ╠═8d614d2d-a2c6-4721-aa80-1984949bc58b
 # ╠═ebf5d093-1f31-4fa2-b0ae-2c1626f2b547
 # ╠═367e6db7-2673-443f-86cc-4e2ce79bbc68
 # ╠═c8ddbb93-b6bc-4264-81bf-fc64c2e5b6b5
+# ╠═b0c3c64f-9736-4b76-84b6-12a30803c80a
+# ╠═a83ec17e-27ee-4337-a909-456026bc615c
+# ╠═e1440840-224f-4880-962e-e2436e462f2d
+# ╠═1de0578f-5b3a-4cb3-ad03-b7c4b172320e
+# ╠═b6eaeb83-8208-4d7c-9cc6-55199681238d
 # ╠═4814218e-08a8-4c02-a2d8-1c26c9306e31
 # ╠═e1b27519-eb42-4c61-8dbe-bdc6313a2492
+# ╠═4a1e3f1d-7182-478f-8068-9cd9e4ab1924
+# ╠═09d42534-2542-49cc-9a1b-951a524504f1
+# ╠═1fcdb3c1-7092-4929-84ff-e149727ad682
+# ╠═ef3c7887-6755-4b3f-af56-08610d0f19df
+# ╠═8e85270e-a8bf-463e-b5f7-276c00f1fe1b
 # ╠═a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
 # ╠═04b1e688-d42f-4f01-8aed-c01894220a4f
-# ╠═a1b30402-14e6-4d33-a2d6-3ca0e8e9982e
 # ╠═4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
 # ╠═24ffbfb3-9029-42da-a445-a74253bf1ef3
+# ╠═eed8faf4-6aba-4c98-b2b9-e702f54e987a
+# ╠═e853a196-1d8e-40e4-9eb2-f84dff74b85c
+# ╠═30c7eca9-2e90-4bca-a475-0442c240ee0b
+# ╠═af5ca849-920e-42d7-a7d4-a565bb50b241
+# ╠═daeba561-729e-452d-8296-9ad6add6b675
+# ╠═62197f77-9ad1-4113-954d-0b5357a237f4
+# ╠═695367fa-3d7b-48a4-ab62-a02c99f2e3a3
+# ╠═a89f7f16-b119-4411-9cfc-0a5385d9a847
+# ╠═0a7c87bb-e9d3-40a5-b7d6-00d78b76274b
+# ╠═0bb5218a-30b4-46b5-baa1-fd1938a23203
 # ╟─0aa6b76e-cd19-463d-9ec4-9154d725b93c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
