@@ -157,7 +157,7 @@ end
 # ╔═╡ da112207-6c6b-483b-88b3-b86613c2907d
 begin
 	ti = 0
-	tf = 100
+	tf = 30
 	N = 1001
 	t = LinRange(ti,tf,N)
 
@@ -169,7 +169,7 @@ begin
 
 	alg = Midpoint()
 
-	del = 1*10^(-15)
+	del = 1*10^(-9)
 
 	var_1 = m_1,m_2,l_1,l_2,g
 	X_1 = [(0.5+(2*del))*pi; (0.5+(2*del))*pi; 0.0; 0.0]
@@ -186,11 +186,8 @@ t
 # ╔═╡ fdf8871c-a46e-46eb-8c4a-107b7663bfef
 t2 = LinRange(ti,tf,101)
 
-# ╔═╡ 9813c381-fc09-48c3-8f53-74c378d3ce3f
-t3 = LinRange(ti,50,5001)
-
 # ╔═╡ 36f469c7-fcb6-45c8-9836-ef8e04d89639
-time = copy(t3)
+time = copy(t)
 
 # ╔═╡ d5b3fcd9-8aec-4464-8f94-4b5fc8ea376c
 prob1 = CoupledODEs(pendulum, X_1, var_1; diffeq);
@@ -278,40 +275,27 @@ X4 = sol4[:,1:2];
 # ╔═╡ 1de0578f-5b3a-4cb3-ad03-b7c4b172320e
 X5 = sol5[:,1:2]
 
+# ╔═╡ fe0bffbb-c993-45fd-9815-5f1d335850e5
+function traces(data)
+	X_coords = zeros(length(data),2);
+	for i in 1:length(data)
+		X_coords[i,1] = l_1*sin(data[i,1]) + l_2*sin(data[i,2]) #x2
+		X_coords[i,2] = -l_1*cos(data[i,1]) - l_2*cos(data[i,2])#y2
+	end
+	return X_coords
+end;
+
 # ╔═╡ b6eaeb83-8208-4d7c-9cc6-55199681238d
 begin
-	X1_coords = zeros(length(X1),2);
-	X2_coords = zeros(length(X2),2);
-	X3_coords = zeros(length(X3),2);
-	X4_coords = zeros(length(X4),2);
-	X5_coords = zeros(length(X5),2);
-
-	for i in 1:length(X1)
-		X1_coords[i,1] = l_1*sin(X1[i,1]) + l_2*sin(X1[i,2]) #x2
-		X1_coords[i,2] = -l_1*cos(X1[i,1]) - l_2*cos(X1[i,2])#y2
-	end
-
-	for i in 1:length(X2)
-		X2_coords[i,1] = l_1*sin(X2[i,1]) + l_2*sin(X2[i,2]) #x2
-		X2_coords[i,2] = -l_1*cos(X2[i,1]) - l_2*cos(X2[i,2])#y2
-	end
-	for i in 1:length(X3)
-		X3_coords[i,1] = l_1*sin(X3[i,1]) + l_2*sin(X3[i,2]) #x2
-		X3_coords[i,2] = -l_1*cos(X3[i,1]) - l_2*cos(X3[i,2])#y2
-	end
-
-	for i in 1:length(X4)
-		X4_coords[i,1] = l_1*sin(X4[i,1]) + l_2*sin(X4[i,2]) #x2
-		X4_coords[i,2] = -l_1*cos(X4[i,1]) - l_2*cos(X4[i,2])#y2
-	end
-
-	for i in 1:length(X5)
-		X5_coords[i,1] = l_1*sin(X5[i,1]) + l_2*sin(X5[i,2]) #x2
-		X5_coords[i,2] = -l_1*cos(X5[i,1]) - l_2*cos(X5[i,2])#y2
-	end
+	X1_coords = traces(X1);
+	X2_coords = traces(X2);
+	X3_coords = traces(X3);
+	X4_coords = traces(X4);
+	X5_coords = traces(X5);
 end
 
 # ╔═╡ 4814218e-08a8-4c02-a2d8-1c26c9306e31
+# ╠═╡ show_logs = false
 anim = @animate for i in eachindex(time)
     show_mass([X1[i,:],X2[i,:],X3[i,:],X4[i,:],X5[i,:]],time[i],l_1,l_2)
 
@@ -326,10 +310,10 @@ anim = @animate for i in eachindex(time)
 end
 
 # ╔═╡ e1b27519-eb42-4c61-8dbe-bdc6313a2492
-gif(anim,"pendulum4.gif",fps=30)
+gif(anim,"anim_draft.gif",fps=30)
 
 # ╔═╡ 4a1e3f1d-7182-478f-8068-9cd9e4ab1924
-X_6 = [2.139 ; 1.592; 0.0; 0.0]
+X_6 = [2.125; 1.415; 0.0; 0.0]
 
 # ╔═╡ 09d42534-2542-49cc-9a1b-951a524504f1
 begin
@@ -340,143 +324,162 @@ end
 # ╔═╡ 1fcdb3c1-7092-4929-84ff-e149727ad682
 X6 = sol6[:,1:2];
 
+# ╔═╡ c3505464-382e-447d-af4c-ca9c56762776
+X6_coords = traces(X6);
+
 # ╔═╡ ef3c7887-6755-4b3f-af56-08610d0f19df
+# ╠═╡ show_logs = false
 anim2 = @animate for i in eachindex(time)
     show_mass([X6[i,:]],time[i],l_1,l_2)
+
+	trailLength = 20
+	interval = i<=trailLength ? (1:i) : (i-trailLength+1:i)
+	plot!(X6_coords[interval,1], X6_coords[interval,2], label=false, colour="red", alpha=LinRange(0,1,trailLength))
 end
 
 # ╔═╡ 8e85270e-a8bf-463e-b5f7-276c00f1fe1b
-gif(anim2,"pendulum5.gif",fps=25)
+gif(anim2,"anim2_draft.gif",fps=30)
 
-# ╔═╡ a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
-begin #a-div(a,2pi)*2pi
-	
-	x=zeros(length(time))
-	y=zeros(length(time))
-	largeAngleIndex=[]
-	
-	for i in 1:length(time)
-
-		x[i]= X1[i,1] - div(X1[i,1],2pi)*2pi
-		y[i]= X1[i,2] - div(X1[i,2],2pi)*2pi
-
-		x[i]>pi ? x[i] += -2pi : (x[i]<-pi ? x[i] += 2pi : x[i])
-		y[i]>pi ? y[i] += -2pi : (y[i]<-pi ? y[i] += 2pi : y[i])
-	end
-end
-
-# ╔═╡ 04b1e688-d42f-4f01-8aed-c01894220a4f
-largeAngleIndex
-
-# ╔═╡ eed8faf4-6aba-4c98-b2b9-e702f54e987a
+# ╔═╡ be6bb8ec-e08e-4aa0-ba02-a9bed2f63b74
 begin
-	plot(x[:],y[:],legend=false)
-	xlims!(-pi,pi)
-	ylims!(-pi,pi)
+	X_7 = [.25pi, .25pi, 0, 0];
+	X_8 = [pi, pi, 0, 0];
+	
+	prob7 = CoupledODEs(pendulum, X_7, var_1; diffeq);
+	prob8 = CoupledODEs(pendulum, X_8, var_1; diffeq);
+
+	sol7, t_7 = trajectory(prob7, length(time); Δt = time[2]-time[1]);
+	sol8, t_8 = trajectory(prob8, length(time); Δt = time[2]-time[1]);
 end
 
-# ╔═╡ e853a196-1d8e-40e4-9eb2-f84dff74b85c
+# ╔═╡ 8329ea53-a9eb-4fa6-a29e-a83fbf0f90d8
 begin
-	plot(time,[x,y],legend=false)
-	xlims!(0,tf-80)
-	ylims!(-pi,pi)
+	X7 = sol7[:,1:2];
+	X8 = sol8[:,1:2];
+
+	X7_coords = traces(X7);
+	X8_coords = traces(X8);
 end
+
+# ╔═╡ 727d2bed-836d-4cc3-8650-64ac2ad7d44d
+# ╠═╡ show_logs = false
+anim3 = @animate for i in eachindex(time)
+    show_mass([X7[i,:]],time[i],l_1,l_2)
+
+	trailLength = 20
+	interval = i<=trailLength ? (1:i) : (i-trailLength+1:i)
+	plot!(X7_coords[interval,1], X7_coords[interval,2], label=false, colour="red", alpha=LinRange(0,1,trailLength))
+end
+
+# ╔═╡ 09c7cfe9-df6e-4c1c-841a-dfe0b015dd5e
+gif(anim3,"anim3_draft.gif",fps=30)
+
+# ╔═╡ c9c310cf-4382-4de6-bd4c-df244e6f8fc6
+# ╠═╡ show_logs = false
+anim4 = @animate for i in eachindex(time)
+    show_mass([X8[i,:]],time[i],l_1,l_2)
+
+	trailLength = 20
+	interval = i<=trailLength ? (1:i) : (i-trailLength+1:i)
+	plot!(X8_coords[interval,1], X8_coords[interval,2], label=false, colour="red", alpha=LinRange(0,1,trailLength))
+end
+
+# ╔═╡ 32a71c54-2f6b-456b-9ce6-30f0ac30c331
+gif(anim4,"anim4_draft.gif",fps=30)
 
 # ╔═╡ 30c7eca9-2e90-4bca-a475-0442c240ee0b
 time
 
-# ╔═╡ daeba561-729e-452d-8296-9ad6add6b675
-begin
-	θ_1 = copy(X1[:,1])
-	θ_2 = copy(X1[:,2])
-	index = [1]
-
+# ╔═╡ daa18223-64a8-4c32-b426-860c7fac6f4d
+function angle_cut(data)
+	θ_1 = copy(data[:,1])
+	θ_2 = copy(data[:,2])
+	index1 = [1]
+	index2 = [1]
+	
 	for i in 1:length(θ_1)
 		if θ_1[i] > pi
-			push!(index,i)
+			push!(index1,i)
 			for j in i:length(θ_1)
 				θ_1[j] = θ_1[j]-2pi
 			end
 		elseif θ_1[i] < -pi
-			push!(index,i)
+			push!(index1,i)
 			for j in i:length(θ_1)
 				θ_1[j] = θ_1[j]+2pi
 			end
 		elseif θ_2[i] > pi
-			push!(index,i)
+			push!(index2,i)
 			for j in i:length(θ_2)
 				θ_2[j] = θ_2[j]-2pi
 			end
 		elseif θ_2[i] < -pi
-			push!(index,i)
+			push!(index2,i)
 			for j in i:length(θ_2)
 				θ_2[j] = θ_2[j]+2pi
 			end
 		end
 	end
 
-	push!(index,length(θ_1)+1)
+	push!(index1,length(θ_1)+1)
+	push!(index2,length(θ_2)+1)
 
 	plotsθ_1 = []
 	plotsθ_2 = []
-	times = []
+	times1 = []
+	times2 = []
 	num = collect(1:length(θ_1))
 
-	for i in 1:length(index)-1
-		q1 = θ_1[index[i]:index[i+1]-1]
-		q2 = θ_2[index[i]:index[i+1]-1]
+	for i in 1:length(index1)-1
+		q1 = θ_1[index1[i]:index1[i+1]-1]
 		push!(plotsθ_1,q1)
-		push!(plotsθ_2,q2)
 		
-		w = num[index[i]:index[i+1]-1]
-		push!(times,w)
+		w1 = num[index1[i]:index1[i+1]-1]
+		push!(times1,w1)
 	end
 
-		scatter(num,θ_1)
-		plot!(times,plotsθ_1,legend=false)
-		xlims!(0,100)
+	for i in 1:length(index2)-1
+		q2 = θ_2[index2[i]:index2[i+1]-1]
+		push!(plotsθ_2,q2)
+		
+		w2 = num[index2[i]:index2[i+1]-1]
+		push!(times2,w2)
+	end
+	return [plotsθ_1,plotsθ_2,times1,times2]
 end
 
-# ╔═╡ 4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
-# ╠═╡ skip_as_script = true
-#=╠═╡
-anim3 = @animate for i in eachindex(time)
-	a=i
-	trailLength = 10
-	interval = a<=trailLength ? (1:a) : (a-trailLength:a)
+# ╔═╡ 08591c7b-0c68-494e-bd7a-661d4cdfea4b
+begin
+	angleCut6 = angle_cut(X6); #2.125 1.415
+	angleCut7 = angle_cut(X7); #.25pi .25pi
+	angleCut8 = angle_cut(X8); #pi pi
+end
+
+# ╔═╡ 67d7c9d4-ee0c-47da-accd-de113a89c447
+begin
+	function p(data,xlower,xupper)
+		plot(data[3],data[1],colour="red",legend=false,size = (700,400))
+		plot!(data[4],data[2],colour="blue",legend=false,size = (700,400))
+		xlims!(xlower,xupper)
+		ylims!(-pi,pi)
+	end
+
+	xlower = 200
+	xupper = 400
 	
-	plot(θ_1[interval],θ_2[interval],legend=false)
-	scatter!((x[i],y[i]),size=(500,500),label=false)
-	xlims!(-pi,pi)
-	ylims!(-pi,pi)
-end
-  ╠═╡ =#
+	p7=plot(p(angleCut7,xlower,xupper))
+	p8=plot(p(angleCut8,xlower,xupper))
+	p6=plot(p(angleCut6,xlower,xupper))
 
-# ╔═╡ 24ffbfb3-9029-42da-a445-a74253bf1ef3
-# ╠═╡ skip_as_script = true
-#=╠═╡
-gif(anim3,"angle_comparison.gif",fps=25)
-  ╠═╡ =#
-
-# ╔═╡ af5ca849-920e-42d7-a7d4-a565bb50b241
-begin
-	plot(X1[:,1])
-	plot!(θ_1[:])
-	hline!([pi,-pi])
-end
-
-# ╔═╡ 62197f77-9ad1-4113-954d-0b5357a237f4
-begin
-	plot(plotsθ_1[1][1:15],plotsθ_2[1][1:15],legend=false)
-	xlims!(-pi,pi)
+	plot(p7,p8,p6, layout=(3,1))
 	ylims!(-pi,pi)
 end
 
 # ╔═╡ 695367fa-3d7b-48a4-ab62-a02c99f2e3a3
-index
+index2
 
 # ╔═╡ a89f7f16-b119-4411-9cfc-0a5385d9a847
-plotsθ_1
+plotsθ_2
 
 # ╔═╡ 0bb5218a-30b4-46b5-baa1-fd1938a23203
 begin
@@ -2337,7 +2340,6 @@ version = "1.4.1+0"
 # ╠═da112207-6c6b-483b-88b3-b86613c2907d
 # ╠═dd7e2eee-4205-48da-bf17-1003aa4193f8
 # ╠═fdf8871c-a46e-46eb-8c4a-107b7663bfef
-# ╠═9813c381-fc09-48c3-8f53-74c378d3ce3f
 # ╠═36f469c7-fcb6-45c8-9836-ef8e04d89639
 # ╠═d5b3fcd9-8aec-4464-8f94-4b5fc8ea376c
 # ╠═fb0d92c3-ed29-4d60-a2bc-eac5121d86ce
@@ -2352,24 +2354,26 @@ version = "1.4.1+0"
 # ╠═a83ec17e-27ee-4337-a909-456026bc615c
 # ╠═e1440840-224f-4880-962e-e2436e462f2d
 # ╠═1de0578f-5b3a-4cb3-ad03-b7c4b172320e
+# ╠═fe0bffbb-c993-45fd-9815-5f1d335850e5
 # ╠═b6eaeb83-8208-4d7c-9cc6-55199681238d
 # ╠═4814218e-08a8-4c02-a2d8-1c26c9306e31
 # ╠═e1b27519-eb42-4c61-8dbe-bdc6313a2492
 # ╠═4a1e3f1d-7182-478f-8068-9cd9e4ab1924
 # ╠═09d42534-2542-49cc-9a1b-951a524504f1
 # ╠═1fcdb3c1-7092-4929-84ff-e149727ad682
+# ╠═c3505464-382e-447d-af4c-ca9c56762776
 # ╠═ef3c7887-6755-4b3f-af56-08610d0f19df
 # ╠═8e85270e-a8bf-463e-b5f7-276c00f1fe1b
-# ╠═a8b8df50-9b82-4a5a-ac72-a61ecd9f8b02
-# ╠═04b1e688-d42f-4f01-8aed-c01894220a4f
-# ╠═4e57e9de-f0cc-4c2f-8e5b-f74de4dd5f67
-# ╠═24ffbfb3-9029-42da-a445-a74253bf1ef3
-# ╠═eed8faf4-6aba-4c98-b2b9-e702f54e987a
-# ╠═e853a196-1d8e-40e4-9eb2-f84dff74b85c
+# ╠═be6bb8ec-e08e-4aa0-ba02-a9bed2f63b74
+# ╠═8329ea53-a9eb-4fa6-a29e-a83fbf0f90d8
+# ╠═727d2bed-836d-4cc3-8650-64ac2ad7d44d
+# ╠═09c7cfe9-df6e-4c1c-841a-dfe0b015dd5e
+# ╠═c9c310cf-4382-4de6-bd4c-df244e6f8fc6
+# ╠═32a71c54-2f6b-456b-9ce6-30f0ac30c331
 # ╠═30c7eca9-2e90-4bca-a475-0442c240ee0b
-# ╠═af5ca849-920e-42d7-a7d4-a565bb50b241
-# ╠═daeba561-729e-452d-8296-9ad6add6b675
-# ╠═62197f77-9ad1-4113-954d-0b5357a237f4
+# ╠═daa18223-64a8-4c32-b426-860c7fac6f4d
+# ╠═08591c7b-0c68-494e-bd7a-661d4cdfea4b
+# ╠═67d7c9d4-ee0c-47da-accd-de113a89c447
 # ╠═695367fa-3d7b-48a4-ab62-a02c99f2e3a3
 # ╠═a89f7f16-b119-4411-9cfc-0a5385d9a847
 # ╠═0a7c87bb-e9d3-40a5-b7d6-00d78b76274b
