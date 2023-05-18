@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.25
+# v0.19.22
 
 using Markdown
 using InteractiveUtils
@@ -20,9 +20,36 @@ md"""
 ## By CJ Barnes-Wilkie, George Brown, Reuben Cook, James Elford, Ruby McCallum
 """
 
+# ╔═╡ 70ac324f-ed16-4445-b95b-32d6de946494
+PlutoUI.TableOfContents()
+
 # ╔═╡ 06f81be3-964c-4051-a6a7-cf5bf53ce27b
 md"""
 ## Introduction
+"""
+
+# ╔═╡ fcf6520e-5270-4f9e-90d3-2f52401e3d51
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/pendRegular.gif?raw=true?raw=true"))
+"""
+
+# ╔═╡ 0f7ff96b-8a02-4929-ac6e-1d50f7dd0170
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/title_page.png?raw=true"))
+"""
+
+# ╔═╡ 46c03399-38f1-4b2c-9dc7-a28e8842a2ab
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Screenshot%202023-05-18%20at%2011.34.33%20AM.png?raw=true"))
+"""
+
+# ╔═╡ a3651b30-4b8e-4dba-97ea-31c4871177f5
+
+
+
+# ╔═╡ e288293d-98d4-4fbc-ac52-24e84e8f5018
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/LIGO_RD_Crackle_expt_fig_1.jpg?raw=true"))
 """
 
 # ╔═╡ cd9baf06-33d6-4c56-9fab-c5f800106400
@@ -423,6 +450,31 @@ md"""
 # Results
 """
 
+# ╔═╡ e9757a95-d5fa-427a-aa24-fc5a08f7f1c3
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/pendRegular.gif?raw=true"))
+"""
+
+# ╔═╡ 53d2c6be-9696-40f5-b4c8-e70309e10589
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/pendChaotic.gif?raw=true"))
+"""
+
+# ╔═╡ 29f534ed-bcaf-41b8-abff-acb9dd42a5df
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/pendWeirdRegularInitial.png?raw=true"))
+"""
+
+# ╔═╡ 1a59df45-a7a8-4495-a318-e0c5e9298eb7
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/pendWeirdRegular.gif?raw=true"))
+"""
+
+# ╔═╡ 60e84d30-13d7-464d-9e4d-423a33e02963
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Angle%20Comparison%20Final.png?raw=true"))
+"""
+
 # ╔═╡ ad4c15a4-bef6-47b3-bb55-db14d0542408
 begin
 	plot(tr, [solutions_theta], labels=["θ1" "θ1" "θ1" "θ2" "θ2" "θ2"],   xlabel=L"Time $(s)$", ylabel=L"$\theta$ $(rad)$", title="Angle over time", layout=(3,1), size=(900,630), legend=:outerright, left_margin=0.5cm)
@@ -519,6 +571,77 @@ $(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapu
 # ╔═╡ 91d906ec-4631-43ae-bcb8-379a8a801615
 md"""
 # Conclusion
+"""
+
+# ╔═╡ 78b6f484-c2bd-4ccc-b72b-314086c932f5
+md"""
+### Chaotic systems recap:
+- Complex dynamical systems.
+
+
+- Often appear to be in random states of disorder and irregularity but really exhibit rich underlying patterns, interconnection, feedback loops, repetition, self-similarity, fractals, and self-organization. 
+
+
+- Small changes in one state of a deterministic nonlinear system can result in large differences in a later state reflecting the sensitive dependence on initial conditions.
+"""
+
+# ╔═╡ f0e21d0d-2230-4b41-a14b-1f1c7d5d0eb4
+md"""
+### Lyapunov exponent
+
+- Systems exhibiting chaotic motion are characterized by their sensitive dependence on initial conditions. 
+
+
+- Neighboring trajectories diverge exponentially rapidly. This can be quantified using the Lyapunov exponent.
+
+
+- Given an initial condition $x_0$, a nearby point $x_0+\delta_0$, where $\delta_0$ is assumed very small. Let $\delta_n$ be the separation of the orbits after $n$ iterations 
+$|\delta_n|\approx|\delta_0|e^{n\sigma},$ 
+> then $\sigma$ is called the __Liapunov exponent__ for the system.
+
+- If $\sigma<0$ the motion is _regular_, while if $\sigma >0$ the motion is _chaotic_.
+"""
+
+# ╔═╡ c4c86988-0fd2-4b93-ba15-de79b1b91983
+md"""
+Note that a positive Lyapunov exponent is a necessary condition for chaos but not a sufficient one. I.e it is possible to find exponential divergence of nearby trajectories even for systems that are not chaotic. Lyapunov exponents should converge after enough time has passed but we only compute them for a time range of $30$s.
+"""
+
+# ╔═╡ 92b9b330-a706-40fa-8312-9a652a078768
+md"""
+### Project Overview
+!!! note "Problem:"
+	Determine the range of release angles for which the double-rod pendulum is chaotic.
+
+We visualized the double pendulum for three initial conditions 
+- A regular system $(0.25\pi,0.25\pi)$ 
+- A chaotic system $(\pi,\pi)$
+- A boundary  case $(2.139,1.592)$
+
+We compared energy conservation for 4 different algorithms and settled on Vern6.
+
+Then we computed the matrix of Lyapunov exponents for the two release angles over the range of (-π, π) which revealed some self-similar patterns and
+possible fractal structures. 
+"""
+
+# ╔═╡ 205d5efe-992b-4d44-a6b5-f48202139448
+md"""
+> Even though there are a set of definite equations governing this system, its long-term behavior is still intrinsically unpredictable due to the difference between predictions with slightly different initial conditions growing exponentially, not to mention inevitable numerical errors.
+"""
+
+# ╔═╡ 821cbbd8-d9cc-439a-b2ad-d6bdac00a292
+md"""
+### Further directions 
+
+- Damped and forced double pendulum
+
+- Symplectic integrators
+
+- Triple pendulum and pendulum chains.
+
+- Try different parameter values other than $m_1 = m_2 = l_1 = l_2 = 1$
+
+- Investigate other indicators of chaotic motion. 'Time-for-first-flip' contour plot/heatmaps reveal self-similar patterns on finer and finer scales. A fractal structure!
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2468,9 +2591,15 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─588511b2-cb31-46e3-8210-8a5b0e691277
 # ╟─cf668ddb-1687-4fbf-88da-738b83da20f0
-# ╠═f4bf6540-eec7-11ed-15be-55f2d3e83e2a
-# ╠═95b6473a-906b-47b1-87f6-6daed1597409
+# ╟─f4bf6540-eec7-11ed-15be-55f2d3e83e2a
+# ╟─95b6473a-906b-47b1-87f6-6daed1597409
+# ╟─70ac324f-ed16-4445-b95b-32d6de946494
 # ╟─06f81be3-964c-4051-a6a7-cf5bf53ce27b
+# ╟─fcf6520e-5270-4f9e-90d3-2f52401e3d51
+# ╟─0f7ff96b-8a02-4929-ac6e-1d50f7dd0170
+# ╟─46c03399-38f1-4b2c-9dc7-a28e8842a2ab
+# ╟─a3651b30-4b8e-4dba-97ea-31c4871177f5
+# ╟─e288293d-98d4-4fbc-ac52-24e84e8f5018
 # ╟─cd9baf06-33d6-4c56-9fab-c5f800106400
 # ╟─e665f127-a7aa-44f9-b4d1-5f8d84c99317
 # ╟─17d73eaa-914f-43ec-8b2e-ac11990c01ce
@@ -2518,6 +2647,11 @@ version = "1.4.1+0"
 # ╟─e548a545-61d2-4e9d-a708-8939c415f8e1
 # ╠═32d941bd-5b05-4219-b305-8b9cbf302c0e
 # ╟─d54c46f3-970e-411e-9e1b-29e2f28e4116
+# ╟─e9757a95-d5fa-427a-aa24-fc5a08f7f1c3
+# ╟─53d2c6be-9696-40f5-b4c8-e70309e10589
+# ╟─29f534ed-bcaf-41b8-abff-acb9dd42a5df
+# ╟─1a59df45-a7a8-4495-a318-e0c5e9298eb7
+# ╟─60e84d30-13d7-464d-9e4d-423a33e02963
 # ╟─ad4c15a4-bef6-47b3-bb55-db14d0542408
 # ╟─f3d89308-cd7e-4900-aa56-af94aaf43cfa
 # ╟─92af1e1e-cc68-4011-a639-1cc6d82aaa45
@@ -2525,7 +2659,7 @@ version = "1.4.1+0"
 # ╟─b0c4c9ac-8831-418f-ae21-4e51e2dc7579
 # ╟─5230e429-70eb-4c21-a2b4-38e8592c453d
 # ╟─007aa05d-1320-45fe-9ed3-ff811aab591e
-# ╟─a463a256-77e9-4520-815e-5ecae67ffe3f
+# ╠═a463a256-77e9-4520-815e-5ecae67ffe3f
 # ╟─ae2fdd23-a02f-4b46-b817-219ebdb0513e
 # ╟─02789133-f0f3-49ad-86d0-76e6efe4bdfc
 # ╟─be3f8719-9f10-4fc9-9cd4-55e8e5569645
@@ -2538,5 +2672,11 @@ version = "1.4.1+0"
 # ╟─a86ab833-cfd5-44db-840e-357f05691875
 # ╟─f4e509c1-8a8f-40ee-a6f7-b4862f7cda87
 # ╟─91d906ec-4631-43ae-bcb8-379a8a801615
+# ╟─78b6f484-c2bd-4ccc-b72b-314086c932f5
+# ╟─f0e21d0d-2230-4b41-a14b-1f1c7d5d0eb4
+# ╟─c4c86988-0fd2-4b93-ba15-de79b1b91983
+# ╟─92b9b330-a706-40fa-8312-9a652a078768
+# ╟─205d5efe-992b-4d44-a6b5-f48202139448
+# ╟─821cbbd8-d9cc-439a-b2ad-d6bdac00a292
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
