@@ -92,9 +92,9 @@ This cell here sets up $3$ different initial conditions. A regular system $(0.25
 # ╔═╡ 3b6ccc68-54d6-40f8-bed0-9c99ec058661
 begin
 	#These are the initial conditions for the animations
-	s_regular = [0.25pi, 0.25pi, 0, 0]
-	s_chaotic = [pi, pi, 0, 0]
-	s_mystery = [2.139, 1.592, 0, 0]
+	s_regular = [0.25pi,0.25pi,0,0]
+	s_chaotic = [pi,pi,0,0]
+	s_mystery = [2.125,1.415,0,0]
 end
 
 # ╔═╡ 42f94522-dfad-4c8d-8b0d-844da1db5a43
@@ -225,9 +225,18 @@ begin
 	end
 end
 
+# ╔═╡ edfbabda-a075-47a0-8b30-73339379b907
+E_plot(sol_set_regular, (2,2)) #This is all 4 energy plots for the different regular solutions.
+
+# ╔═╡ 04877f02-6129-41bb-820c-e7fab1c47f4a
+E_plot(sol_set_chaotic, (2,2)) #This is all 4 energy plots for the different chaotic solutions.
+
+# ╔═╡ 199996bd-c93d-4fe9-be31-e918b28d0078
+E_plot(sol_set_mystery, (2,2)) #This is all 4 energy plots for the different mystery solutions.
+
 # ╔═╡ eac14fd6-7929-43bf-ada6-41d4deace45a
 md"""
-The reason behind our decision will be discussed more in the **Results** section, but we ended up choosing Vern6 as our algorithm. Now we can make plots for the change in angle and angular velocity over time. Before we get to that, we need to be able to restrict the angle between -π and π. This can be seen in the below cell.
+We ended up choosing Vern6 as our algorithm. Now we can make plots for the change in angle and angular velocity over time. Before we get to that, we need to be able to restrict the angle between -π and π. This can be seen in the below cell.
 """
 
 # ╔═╡ d227fbc1-a2c3-44fe-b140-888250b90312
@@ -387,7 +396,7 @@ begin
 		dt = t_final/t_step #This finds the change in time that is needed for the lyapunov() function
 		diffeq = (alg = algo, abstol = 1e-9, reltol = 1e-9) #This sets up a few things such as algorithm and tolerance
 		pendy = CoupledODEs(pendulum, con, p; diffeq) #This solves a Coupled ODE using the defined things
-		exponent = lyapunov(pendy, t_step; Δt = dt) #This finds the Lyapunov exponent
+		exponent = lyapunov(pendy, t_final; Δt = dt) #This finds the Lyapunov exponent
 	end
 end
 
@@ -398,7 +407,7 @@ Now using the function lya(), we can determine a matrix of lyapunov exponents ov
 
 # ╔═╡ 32d941bd-5b05-4219-b305-8b9cbf302c0e
 begin
-	M = 10 #This is how many steps there are
+	M = 20 #This is how many steps there are
 	θ = LinRange(-pi,pi,M) #This sets up both angles
 	amount = collect(1:length(θ))
 	lyapunov_matrix = zeros(M, M) #This sets up an empty matrix
@@ -413,24 +422,6 @@ end
 md"""
 # Results
 """
-
-# ╔═╡ ad88e708-51d9-4d1a-92bf-e6f9c102f4c2
-E_plot(sol_set_regular, (1,1)) #This is the energy plot of all of the regular solutions.
-
-# ╔═╡ edfbabda-a075-47a0-8b30-73339379b907
-E_plot(sol_set_regular, (2,2)) #This is all 4 energy plots for the different regular solutions.
-
-# ╔═╡ 7f2c86cb-f9a7-4148-b088-f52e5c9e2764
-E_plot(sol_set_chaotic, (1,1)) #This is the energy plot of all of the chaotic solutions
-
-# ╔═╡ 04877f02-6129-41bb-820c-e7fab1c47f4a
-E_plot(sol_set_chaotic, (2,2)) #This is all 4 energy plots for the different chaotic solutions.
-
-# ╔═╡ 10af53fb-ddc0-4b95-9d75-c582a70d2ac8
-E_plot(sol_set_mystery, (1,1)) #This is the energy plot of all of the stable solutions
-
-# ╔═╡ 199996bd-c93d-4fe9-be31-e918b28d0078
-E_plot(sol_set_mystery, (2,2)) #This is all 4 energy plots for the different mystery solutions.
 
 # ╔═╡ ad4c15a4-bef6-47b3-bb55-db14d0542408
 begin
@@ -460,7 +451,9 @@ end
 
 # ╔═╡ 007aa05d-1320-45fe-9ed3-ff811aab591e
 begin
-	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", xaxis = "θ1 (radians)", yaxis = "θ2 (radians)") #This plots the lyapunov exponents as a heatmap
+	heatmap(θ, θ, lyapunov_matrix, title = "Lyapunov exponents over both angles", ylabel = "θ1 (radians)", xlabel = "θ2 (radians)") #This plots the lyapunov exponents as a heatmap
+	#vline!([1.417])
+	#hline!([2.125])
 end
 
 # ╔═╡ a463a256-77e9-4520-815e-5ecae67ffe3f
@@ -478,9 +471,14 @@ md"""
 $(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_40,000_calc.png?raw=true"))
 """
 
+# ╔═╡ be3f8719-9f10-4fc9-9cd4-55e8e5569645
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_1,000,000_calc.png?raw=true"))
+"""
+
 # ╔═╡ 2fe1fa58-b848-431f-b30e-c2c9a777c95d
 md"""
-$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_40,000_calc_zoomed.png?raw=true"))
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/Lyapunov_exponents_1,000,000_calc_zoomed.png?raw=true"))
 """
 
 # ╔═╡ 95efbe4b-7103-403b-bb34-5fa5b4cf2648
@@ -508,9 +506,14 @@ md"""
 $(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_40,000_calc.png?raw=true"))
 """
 
+# ╔═╡ a86ab833-cfd5-44db-840e-357f05691875
+md"""
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_1,000,000_calc.png?raw=true"))
+"""
+
 # ╔═╡ f4e509c1-8a8f-40ee-a6f7-b4862f7cda87
 md"""
-$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_40,000_calc_zoomed.png?raw=true"))
+$(Resource("https://github.com/NeonKarearea/Chaos-Control/blob/main/scaled_Lyapunov_exponents_1,000,000_calc_zoomed.png?raw=true"))
 """
 
 # ╔═╡ 91d906ec-4631-43ae-bcb8-379a8a801615
@@ -2492,6 +2495,9 @@ version = "1.4.1+0"
 # ╠═3676a75d-9e72-48f4-bb97-d9b23e75c6fe
 # ╟─56caec54-b63c-4ef4-9211-c2f02552e05e
 # ╠═b37d15cf-2557-4faa-989c-9a35533f4574
+# ╟─edfbabda-a075-47a0-8b30-73339379b907
+# ╟─04877f02-6129-41bb-820c-e7fab1c47f4a
+# ╟─199996bd-c93d-4fe9-be31-e918b28d0078
 # ╟─eac14fd6-7929-43bf-ada6-41d4deace45a
 # ╠═d227fbc1-a2c3-44fe-b140-888250b90312
 # ╟─8a0ecf01-dc30-4c08-972a-78272ae7cf04
@@ -2512,28 +2518,24 @@ version = "1.4.1+0"
 # ╟─e548a545-61d2-4e9d-a708-8939c415f8e1
 # ╠═32d941bd-5b05-4219-b305-8b9cbf302c0e
 # ╟─d54c46f3-970e-411e-9e1b-29e2f28e4116
-# ╟─ad88e708-51d9-4d1a-92bf-e6f9c102f4c2
-# ╟─edfbabda-a075-47a0-8b30-73339379b907
-# ╟─7f2c86cb-f9a7-4148-b088-f52e5c9e2764
-# ╟─04877f02-6129-41bb-820c-e7fab1c47f4a
-# ╟─10af53fb-ddc0-4b95-9d75-c582a70d2ac8
-# ╟─199996bd-c93d-4fe9-be31-e918b28d0078
 # ╟─ad4c15a4-bef6-47b3-bb55-db14d0542408
 # ╟─f3d89308-cd7e-4900-aa56-af94aaf43cfa
 # ╟─92af1e1e-cc68-4011-a639-1cc6d82aaa45
 # ╟─f22ac692-78c1-4989-a824-c0ee49909dc9
 # ╟─b0c4c9ac-8831-418f-ae21-4e51e2dc7579
-# ╠═5230e429-70eb-4c21-a2b4-38e8592c453d
+# ╟─5230e429-70eb-4c21-a2b4-38e8592c453d
 # ╟─007aa05d-1320-45fe-9ed3-ff811aab591e
 # ╟─a463a256-77e9-4520-815e-5ecae67ffe3f
 # ╟─ae2fdd23-a02f-4b46-b817-219ebdb0513e
 # ╟─02789133-f0f3-49ad-86d0-76e6efe4bdfc
+# ╟─be3f8719-9f10-4fc9-9cd4-55e8e5569645
 # ╟─2fe1fa58-b848-431f-b30e-c2c9a777c95d
 # ╟─95efbe4b-7103-403b-bb34-5fa5b4cf2648
 # ╟─efc02bcb-7e16-4f7f-96ea-14c5993de68e
 # ╟─5153bf59-c64c-4f44-bdb4-821c8b6c796a
 # ╟─f7b95946-fd04-455f-a1fd-ee2aabb0346e
 # ╟─045f1615-c841-41ec-b26c-589e8acf55e7
+# ╟─a86ab833-cfd5-44db-840e-357f05691875
 # ╟─f4e509c1-8a8f-40ee-a6f7-b4862f7cda87
 # ╟─91d906ec-4631-43ae-bcb8-379a8a801615
 # ╟─00000000-0000-0000-0000-000000000001
